@@ -49,12 +49,26 @@ export default function WorkloadPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const start = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Start on Monday
-    const end = endOfWeek(currentWeek, { weekStartsOn: 1 }); // End on Sunday
-    const days = eachDayOfInterval({ start, end });
-    setWeekDays(days);
+    try {
+      // Ensure currentWeek is a valid date
+      const validDate = new Date(currentWeek);
+      if (isNaN(validDate.getTime())) {
+        // If invalid, use current date
+        setCurrentWeek(new Date());
+        return;
+      }
 
-    fetchWorkloadData();
+      const start = startOfWeek(validDate, { weekStartsOn: 1 }); // Start on Monday
+      const end = endOfWeek(validDate, { weekStartsOn: 1 }); // End on Sunday
+      const days = eachDayOfInterval({ start, end });
+      setWeekDays(days);
+
+      fetchWorkloadData();
+    } catch (error) {
+      console.error('Error setting up week days:', error);
+      // Fallback to empty array
+      setWeekDays([]);
+    }
   }, [currentWeek]);
 
   const fetchWorkloadData = async () => {
@@ -63,24 +77,24 @@ export default function WorkloadPage() {
       // In a real app, this would be an API call to get workload data
       // For now, we'll simulate it with mock data
       const response = await fetch('/api/workload');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch workload data');
       }
-      
+
       const data = await response.json();
       setWorkloads(data);
     } catch (error) {
       console.error('Error fetching workload data:', error);
       toast.error('Failed to load workload data');
-      
+
       // Mock data for demonstration
       const mockUsers = [
         { id: '1', name: 'John Doe', email: 'john@example.com', image: null },
         { id: '2', name: 'Jane Smith', email: 'jane@example.com', image: null },
         { id: '3', name: 'Bob Johnson', email: 'bob@example.com', image: null },
       ];
-      
+
       const mockWorkloads = mockUsers.map(user => ({
         user,
         tasks: Array.from({ length: Math.floor(Math.random() * 10) + 5 }, (_, i) => ({
@@ -100,24 +114,24 @@ export default function WorkloadPage() {
         overdueTasks: 0,
         upcomingTasks: 0,
       }));
-      
+
       // Calculate statistics
       mockWorkloads.forEach(workload => {
         workload.totalTasks = workload.tasks.length;
         workload.completedTasks = workload.tasks.filter(task => task.status === 'DONE').length;
-        workload.overdueTasks = workload.tasks.filter(task => 
-          task.status !== 'DONE' && 
-          task.dueDate && 
+        workload.overdueTasks = workload.tasks.filter(task =>
+          task.status !== 'DONE' &&
+          task.dueDate &&
           new Date(task.dueDate) < new Date()
         ).length;
-        workload.upcomingTasks = workload.tasks.filter(task => 
-          task.status !== 'DONE' && 
-          task.dueDate && 
+        workload.upcomingTasks = workload.tasks.filter(task =>
+          task.status !== 'DONE' &&
+          task.dueDate &&
           new Date(task.dueDate) > new Date() &&
           new Date(task.dueDate) < new Date(Date.now() + 7 * 86400000)
         ).length;
       });
-      
+
       setWorkloads(mockWorkloads);
     } finally {
       setIsLoading(false);
@@ -141,9 +155,22 @@ export default function WorkloadPage() {
   };
 
   const getTasksForDay = (tasks: Task[], day: Date) => {
-    return tasks.filter(task => 
-      task.dueDate && isSameDay(new Date(task.dueDate), day)
-    );
+    try {
+      return tasks.filter(task => {
+        if (!task.dueDate) return false;
+
+        try {
+          const taskDate = new Date(task.dueDate);
+          if (isNaN(taskDate.getTime())) return false;
+          return isSameDay(taskDate, day);
+        } catch {
+          return false;
+        }
+      });
+    } catch (error) {
+      console.error('Error filtering tasks for day:', error);
+      return [];
+    }
   };
 
   const getWorkloadColor = (completionRate: number, overdueCount: number) => {
@@ -171,7 +198,11 @@ export default function WorkloadPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xl">
-              Week of {format(weekDays[0], 'MMM d')} - {format(weekDays[6], 'MMM d, yyyy')}
+              {weekDays.length > 0 ? (
+                <>Week of {format(weekDays[0], 'MMM d')} - {format(weekDays[6], 'MMM d, yyyy')}</>
+              ) : (
+                'Loading week data...'
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -193,12 +224,21 @@ export default function WorkloadPage() {
                 <div className="grid grid-cols-[200px_1fr] gap-4">
                   <div className="font-medium">Team Member</div>
                   <div className="grid grid-cols-7 gap-2">
-                    {weekDays.map((day) => (
-                      <div key={day.toISOString()} className="text-center text-sm font-medium">
-                        <div>{format(day, 'EEE')}</div>
-                        <div>{format(day, 'd')}</div>
-                      </div>
-                    ))}
+                    {weekDays.length > 0 ? (
+                      weekDays.map((day) => (
+                        <div key={day.toISOString()} className="text-center text-sm font-medium">
+                          <div>{format(day, 'EEE')}</div>
+                          <div>{format(day, 'd')}</div>
+                        </div>
+                      ))
+                    ) : (
+                      Array(7).fill(0).map((_, i) => (
+                        <div key={i} className="text-center text-sm font-medium">
+                          <div className="h-4 w-8 bg-muted/50 rounded mx-auto mb-1"></div>
+                          <div className="h-4 w-4 bg-muted/50 rounded mx-auto"></div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -221,8 +261,8 @@ export default function WorkloadPage() {
                           <span>Workload</span>
                           <span>{workload.completedTasks}/{workload.totalTasks} tasks</span>
                         </div>
-                        <Progress 
-                          value={(workload.completedTasks / Math.max(workload.totalTasks, 1)) * 100} 
+                        <Progress
+                          value={(workload.completedTasks / Math.max(workload.totalTasks, 1)) * 100}
                           className={cn(
                             getWorkloadColor(
                               workload.completedTasks / Math.max(workload.totalTasks, 1),
@@ -247,58 +287,91 @@ export default function WorkloadPage() {
                       </div>
                     </div>
                     <div className="grid grid-cols-7 gap-2">
-                      {weekDays.map((day) => {
-                        const dayTasks = getTasksForDay(workload.tasks, day);
-                        const isOverdue = dayTasks.some(task => 
-                          task.status !== 'DONE' && new Date(task.dueDate!) < new Date()
-                        );
-                        
-                        return (
-                          <div 
-                            key={day.toISOString()} 
-                            className={cn(
-                              "p-2 rounded-md min-h-[80px] text-xs",
-                              dayTasks.length > 0 
-                                ? "bg-muted/50 hover:bg-muted cursor-pointer" 
-                                : "border border-dashed border-muted-foreground/20"
-                            )}
-                            onClick={() => dayTasks.length > 0 && router.push('/tasks')}
+                      {weekDays.length > 0 ? (
+                        weekDays.map((day) => {
+                          try {
+                            const dayTasks = getTasksForDay(workload.tasks, day);
+                            const isOverdue = dayTasks.some(task => {
+                              try {
+                                if (!task.dueDate || task.status === 'DONE') return false;
+                                const dueDate = new Date(task.dueDate);
+                                return !isNaN(dueDate.getTime()) && dueDate < new Date();
+                              } catch {
+                                return false;
+                              }
+                            });
+
+                            return (
+                              <div
+                                key={day.toISOString()}
+                                className={cn(
+                                  "p-2 rounded-md min-h-[80px] text-xs",
+                                  dayTasks.length > 0
+                                    ? "bg-muted/50 hover:bg-muted cursor-pointer"
+                                    : "border border-dashed border-muted-foreground/20"
+                                )}
+                                onClick={() => dayTasks.length > 0 && router.push('/tasks')}
+                              >
+                                {dayTasks.length > 0 ? (
+                                  <div className="space-y-1">
+                                    <div className="font-medium">{dayTasks.length} tasks</div>
+                                    {dayTasks.slice(0, 2).map((task) => (
+                                      <div
+                                        key={task.id}
+                                        className="flex items-center space-x-1 truncate"
+                                      >
+                                        <div
+                                          className="w-2 h-2 rounded-full"
+                                          style={{ backgroundColor: task.project.color }}
+                                        />
+                                        <span className="truncate">{task.title}</span>
+                                      </div>
+                                    ))}
+                                    {dayTasks.length > 2 && (
+                                      <div className="text-muted-foreground">
+                                        +{dayTasks.length - 2} more
+                                      </div>
+                                    )}
+                                    {isOverdue && (
+                                      <div className="text-red-500 flex items-center">
+                                        <AlertTriangle className="h-3 w-3 mr-1" />
+                                        Overdue
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                                    No tasks
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          } catch (error) {
+                            console.error('Error rendering day cell:', error);
+                            return (
+                              <div
+                                key={`error-${day.getTime()}`}
+                                className="p-2 rounded-md min-h-[80px] text-xs border border-dashed border-muted-foreground/20"
+                              >
+                                <div className="flex items-center justify-center h-full text-muted-foreground">
+                                  Error
+                                </div>
+                              </div>
+                            );
+                          }
+                        })
+                      ) : (
+                        Array(7).fill(0).map((_, i) => (
+                          <div
+                            key={`placeholder-${i}`}
+                            className="p-2 rounded-md min-h-[80px] text-xs border border-dashed border-muted-foreground/20"
                           >
-                            {dayTasks.length > 0 ? (
-                              <div className="space-y-1">
-                                <div className="font-medium">{dayTasks.length} tasks</div>
-                                {dayTasks.slice(0, 2).map((task) => (
-                                  <div 
-                                    key={task.id} 
-                                    className="flex items-center space-x-1 truncate"
-                                  >
-                                    <div 
-                                      className="w-2 h-2 rounded-full" 
-                                      style={{ backgroundColor: task.project.color }}
-                                    />
-                                    <span className="truncate">{task.title}</span>
-                                  </div>
-                                ))}
-                                {dayTasks.length > 2 && (
-                                  <div className="text-muted-foreground">
-                                    +{dayTasks.length - 2} more
-                                  </div>
-                                )}
-                                {isOverdue && (
-                                  <div className="text-red-500 flex items-center">
-                                    <AlertTriangle className="h-3 w-3 mr-1" />
-                                    Overdue
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="flex items-center justify-center h-full text-muted-foreground">
-                                No tasks
-                              </div>
-                            )}
+                            <div className="flex items-center justify-center h-full text-muted-foreground">
+                              Loading...
+                            </div>
                           </div>
-                        );
-                      })}
+                        ))
+                      )}
                     </div>
                   </div>
                 ))}
