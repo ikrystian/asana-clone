@@ -330,7 +330,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       }
 
       toast.success('Task deleted successfully');
-      router.push(`/projects/${task.project.id}`);
+      router.push(task.project ? `/projects/${task.project.id}` : '/dashboard');
     } catch (error) {
       console.error('Error deleting task:', error);
       toast.error('Failed to delete task');
@@ -389,7 +389,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                     <Edit className="mr-2 h-4 w-4" />
                     Edit Task
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push(`/projects/${task.project.id}/tasks/new?parentId=${task.id}`)}>
+                  <DropdownMenuItem onClick={() => router.push(task.project ? `/projects/${task.project.id}/tasks/new?parentId=${task.id}` : `/dashboard?parentId=${task.id}`)}>
                     <PlusSquare className="mr-2 h-4 w-4" />
                     Add Subtask
                   </DropdownMenuItem>
@@ -407,16 +407,22 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
 
             <div>
               <div className="flex items-center space-x-2 mb-2">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: task.project.color }}
-                />
-                <Link
-                  href={`/projects/${task.project.id}`}
-                  className="text-sm text-muted-foreground hover:underline"
-                >
-                  {task.project.name}
-                </Link>
+                {task.project && (
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: task.project.color }}
+                  />
+                )}
+                {task.project ? (
+                  <Link
+                    href={`/projects/${task.project.id}`}
+                    className="text-sm text-muted-foreground hover:underline"
+                  >
+                    {task.project.name}
+                  </Link>
+                ) : (
+                  <span className="text-sm text-muted-foreground">No project</span>
+                )}
                 {task.parentTask && (
                   <>
                     <span className="text-muted-foreground">/</span>
@@ -647,20 +653,22 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                   initialTimeEntries={task.timeEntries || []}
                 />
 
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Custom Fields</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CustomFields
-                      taskId={taskId}
-                      projectId={task.project.id}
-                      customFields={task.customFields || []}
-                      customFieldValues={task.customFieldValues || []}
-                      onAddField={() => router.push(`/projects/${task.project.id}/settings/fields`)}
-                    />
-                  </CardContent>
-                </Card>
+                {task.project && (
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Custom Fields</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CustomFields
+                        taskId={taskId}
+                        projectId={task.project.id}
+                        customFields={task.customFields || []}
+                        customFieldValues={task.customFieldValues || []}
+                        onAddField={() => router.push(`/projects/${task.project.id}/settings/fields`)}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               <div className="md:col-span-2 space-y-6">
