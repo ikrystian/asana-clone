@@ -117,15 +117,20 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
     setIsLoading(true);
 
     try {
+      // Process the form data
+      const processedData = {
+        ...data,
+        dueDate: data.dueDate ? data.dueDate.toISOString() : null,
+        assigneeId: data.assigneeId === 'unassigned' ? null : data.assigneeId,
+        parentTaskId: data.parentTaskId === 'none' ? null : data.parentTaskId,
+      };
+
       const response = await fetch(`/api/projects/${projectId}/tasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...data,
-          dueDate: data.dueDate ? data.dueDate.toISOString() : null,
-        }),
+        body: JSON.stringify(processedData),
       });
 
       const result = await response.json();
@@ -381,7 +386,7 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">Unassigned</SelectItem>
+                            <SelectItem value="unassigned">Unassigned</SelectItem>
                             {project.members.map((member) => (
                               <SelectItem key={member.user.id} value={member.user.id}>
                                 {member.user.name}
@@ -413,7 +418,7 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">No parent task</SelectItem>
+                            <SelectItem value="none">No parent task</SelectItem>
                             {tasks.map((task) => (
                               <SelectItem key={task.id} value={task.id}>
                                 {task.title}
