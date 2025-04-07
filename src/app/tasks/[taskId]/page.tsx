@@ -560,7 +560,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                   </CardContent>
                 </Card>
 
-                {task.subtasks.length > 0 && (
+                {task.subtasks && task.subtasks.length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium">Subtasks</CardTitle>
@@ -609,7 +609,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                         variant="ghost"
                         size="sm"
                         className="w-full text-xs"
-                        onClick={() => router.push(`/projects/${task.project.id}/tasks/new?parentId=${task.id}`)}
+                        onClick={() => router.push(task.project ? `/projects/${task.project.id}/tasks/new?parentId=${task.id}` : `/dashboard?parentId=${task.id}`)}
                       >
                         <PlusSquare className="mr-1 h-3 w-3" />
                         Add Subtask
@@ -618,7 +618,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                   </Card>
                 )}
 
-                {task.attachments.length > 0 && (
+                {task.attachments && task.attachments.length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium">Attachments</CardTitle>
@@ -695,7 +695,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4 max-h-96 overflow-y-auto mb-4">
-                      {task.comments.length === 0 ? (
+                      {!task.comments || task.comments.length === 0 ? (
                         <p className="text-muted-foreground text-sm text-center py-4">
                           No comments yet
                         </p>
