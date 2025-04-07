@@ -74,9 +74,9 @@ export default function WorkloadPage() {
   const fetchWorkloadData = async () => {
     setIsLoading(true);
     try {
-      // In a real app, this would be an API call to get workload data
-      // For now, we'll simulate it with mock data
-      const response = await fetch('/api/workload');
+      // Format the current week for the API request
+      const weekParam = currentWeek.toISOString();
+      const response = await fetch(`/api/workload?week=${weekParam}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch workload data');
