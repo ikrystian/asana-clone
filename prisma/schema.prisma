@@ -1,0 +1,273 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String              @id @default(uuid())
+  name              String
+  email             String              @unique
+  password          String
+  image             String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  ownedProjects     Project[]           @relation("ProjectOwner")
+  memberProjects    ProjectMember[]     @relation("ProjectMember")
+  assignedTasks     Task[]              @relation("TaskAssignee")
+  createdTasks      Task[]              @relation("TaskCreator")
+  comments          Comment[]           @relation("CommentAuthor")
+  notifications     Notification[]      @relation("NotificationRecipient")
+  mentionedIn       Mention[]           @relation("MentionedUser")
+  timeEntries       TimeEntry[]         @relation("TimeEntryUser")
+}
+
+model Project {
+  id                String              @id @default(uuid())
+  name              String
+  description       String?
+  color             String              @default("#4299E1") // Default blue color
+  isPublic          Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  ownerId           String
+  owner             User                @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members           ProjectMember[]     @relation("ProjectMembers")
+  sections          Section[]           @relation("ProjectSections")
+  tasks             Task[]              @relation("ProjectTasks")
+  customFields      CustomField[]       @relation("ProjectCustomFields")
+  forms             Form[]              @relation("ProjectForms")
+  automationRules   AutomationRule[]    @relation("ProjectAutomationRules")
+  recurringTasks    RecurringTask[]     @relation("ProjectRecurringTasks")
+}
+
+model ProjectMember {
+  id                String              @id @default(uuid())
+  role              ProjectRole         @default(MEMBER)
+  joinedAt          DateTime            @default(now())
+  projectId         String
+  userId            String
+  project           Project             @relation("ProjectMembers", fields: [projectId], references: [id], onDelete: Cascade)
+  user              User                @relation("ProjectMember", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+enum ProjectRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model Section {
+  id                String              @id @default(uuid())
+  name              String
+  order             Int
+  projectId         String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  project           Project             @relation("ProjectSections", fields: [projectId], references: [id], onDelete: Cascade)
+  tasks             Task[]              @relation("SectionTasks")
+}
+
+model Task {
+  id                String              @id @default(uuid())
+  title             String
+  description       String?
+  status            TaskStatus          @default(TODO)
+  priority          TaskPriority        @default(MEDIUM)
+  dueDate           DateTime?
+  completedAt       DateTime?
+  order             Int                 @default(0)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  projectId         String
+  sectionId         String?
+  assigneeId        String?
+  creatorId         String
+  parentTaskId      String?
+  project           Project             @relation("ProjectTasks", fields: [projectId], references: [id], onDelete: Cascade)
+  section           Section?            @relation("SectionTasks", fields: [sectionId], references: [id])
+  assignee          User?               @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  creator           User                @relation("TaskCreator", fields: [creatorId], references: [id])
+  parentTask        Task?               @relation("TaskSubtasks", fields: [parentTaskId], references: [id])
+  subtasks          Task[]              @relation("TaskSubtasks")
+  comments          Comment[]           @relation("TaskComments")
+  attachments       Attachment[]        @relation("TaskAttachments")
+  customFieldValues CustomFieldValue[]  @relation("TaskCustomFieldValues")
+  mentions          Mention[]           @relation("TaskMentions")
+  timeEntries       TimeEntry[]         @relation("TaskTimeEntries")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Comment {
+  id                String              @id @default(uuid())
+  content           String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  taskId            String
+  authorId          String
+  task              Task                @relation("TaskComments", fields: [taskId], references: [id], onDelete: Cascade)
+  author            User                @relation("CommentAuthor", fields: [authorId], references: [id])
+  mentions          Mention[]           @relation("CommentMentions")
+}
+
+model Attachment {
+  id                String              @id @default(uuid())
+  name              String
+  url               String
+  type              String
+  size              Int
+  createdAt         DateTime            @default(now())
+  taskId            String
+  task              Task                @relation("TaskAttachments", fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model CustomField {
+  id                String              @id @default(uuid())
+  name              String
+  type              FieldType
+  options           String?             // JSON string for dropdown options
+  required          Boolean             @default(false)
+  projectId         String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  project           Project             @relation("ProjectCustomFields", fields: [projectId], references: [id], onDelete: Cascade)
+  values            CustomFieldValue[]  @relation("CustomFieldValues")
+}
+
+enum FieldType {
+  TEXT
+  NUMBER
+  DATE
+  DROPDOWN
+  CHECKBOX
+}
+
+model CustomFieldValue {
+  id                String              @id @default(uuid())
+  value             String              // Stored as string, parsed based on field type
+  taskId            String
+  fieldId           String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  task              Task                @relation("TaskCustomFieldValues", fields: [taskId], references: [id], onDelete: Cascade)
+  field             CustomField         @relation("CustomFieldValues", fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, fieldId])
+}
+
+model Form {
+  id                String              @id @default(uuid())
+  name              String
+  description       String?
+  fields            String              // JSON string for form fields
+  projectId         String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  project           Project             @relation("ProjectForms", fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id                String              @id @default(uuid())
+  type              NotificationType
+  content           String
+  read              Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+  recipientId       String
+  relatedItemId     String?             // Could be taskId, projectId, etc.
+  relatedItemType   String?             // "task", "project", etc.
+  recipient         User                @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  COMMENT_ADDED
+  MENTIONED
+  DUE_DATE_REMINDER
+  PROJECT_INVITATION
+}
+
+model Mention {
+  id                String              @id @default(uuid())
+  createdAt         DateTime            @default(now())
+  userId            String
+  taskId            String?
+  commentId         String?
+  user              User                @relation("MentionedUser", fields: [userId], references: [id], onDelete: Cascade)
+  task              Task?               @relation("TaskMentions", fields: [taskId], references: [id])
+  comment           Comment?            @relation("CommentMentions", fields: [commentId], references: [id])
+}
+
+model TimeEntry {
+  id                String              @id @default(uuid())
+  description       String?
+  startTime         DateTime
+  endTime           DateTime?
+  duration          Int?                // Duration in seconds
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  userId            String
+  taskId            String
+  user              User                @relation("TimeEntryUser", fields: [userId], references: [id], onDelete: Cascade)
+  task              Task                @relation("TaskTimeEntries", fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model AutomationRule {
+  id                String              @id @default(uuid())
+  name              String
+  trigger           String              // JSON string for trigger configuration
+  actions           String              // JSON string for actions configuration
+  isActive          Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  projectId         String
+  project           Project             @relation("ProjectAutomationRules", fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model RecurringTask {
+  id                String              @id @default(uuid())
+  title             String
+  description       String?
+  frequency         RecurringFrequency
+  interval          Int                 @default(1)  // Every X days/weeks/months
+  startDate         DateTime
+  endDate           DateTime?
+  lastRun           DateTime?
+  nextRun           DateTime
+  status            String              @default("ACTIVE") // ACTIVE, PAUSED, COMPLETED
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  projectId         String
+  creatorId         String
+  project           Project             @relation("ProjectRecurringTasks", fields: [projectId], references: [id], onDelete: Cascade)
+  creator           User                @relation("TaskCreator", fields: [creatorId], references: [id])
+}
+
+enum RecurringFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
