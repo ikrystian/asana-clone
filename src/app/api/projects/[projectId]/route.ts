@@ -23,7 +23,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const projectId = params.projectId;
+    const { projectId } = await params;
 
     // Check if project exists and user has access
     const project = await prisma.project.findFirst({
@@ -96,7 +96,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const projectId = params.projectId;
+    const { projectId } = await params;
     const body = await req.json();
     const { name, description, color, isPublic } = projectUpdateSchema.parse(body);
 
@@ -161,7 +161,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const projectId = params.projectId;
+    const { projectId } = await params;
 
     // Check if project exists and user is owner
     const project = await prisma.project.findFirst({

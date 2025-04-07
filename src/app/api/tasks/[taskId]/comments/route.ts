@@ -21,7 +21,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const taskId = params.taskId;
+    const { taskId } = await params;
 
     // Check if task exists and user has access
     const task = await prisma.task.findFirst({
@@ -101,7 +101,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const taskId = params.taskId;
+    const { taskId } = await params;
     const body = await req.json();
     const { content, mentions } = commentSchema.parse(body);
 

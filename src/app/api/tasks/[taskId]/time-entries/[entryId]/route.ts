@@ -22,8 +22,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const taskId = params.taskId;
-    const entryId = params.entryId;
+    const { taskId, entryId } = await params;
 
     // Check if task exists and user has access
     const task = await prisma.task.findFirst({
@@ -93,8 +92,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const taskId = params.taskId;
-    const entryId = params.entryId;
+    const { taskId, entryId } = await params;
     const body = await req.json();
     const { description, startTime, endTime } = timeEntryUpdateSchema.parse(body);
 
@@ -155,7 +153,7 @@ export async function PATCH(
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors }, { status: 400 });
     }
-    
+
     console.error('Error updating time entry:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -176,8 +174,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const taskId = params.taskId;
-    const entryId = params.entryId;
+    const { taskId, entryId } = await params;
 
     // Check if time entry exists and belongs to user
     const timeEntry = await prisma.timeEntry.findFirst({

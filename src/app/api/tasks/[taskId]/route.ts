@@ -27,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const taskId = params.taskId;
+    const { taskId } = await params;
 
     // Get task with project access check
     const task = await prisma.task.findFirst({
@@ -156,7 +156,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const taskId = params.taskId;
+    const { taskId } = await params;
     const body = await req.json();
     const { title, description, status, priority, dueDate, sectionId, assigneeId, order } = taskUpdateSchema.parse(body);
 
@@ -282,7 +282,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const taskId = params.taskId;
+    const { taskId } = await params;
 
     // Get task with project access check
     const task = await prisma.task.findFirst({

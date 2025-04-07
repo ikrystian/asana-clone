@@ -27,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const projectId = params.projectId;
+    const { projectId } = await params;
 
     // Check if project exists and user has access
     const project = await prisma.project.findFirst({
@@ -128,7 +128,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const projectId = params.projectId;
+    const { projectId } = await params;
     const body = await req.json();
     const { title, description, status, priority, dueDate, sectionId, assigneeId, parentTaskId } = taskSchema.parse(body);
 
