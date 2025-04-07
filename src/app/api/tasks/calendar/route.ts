@@ -20,19 +20,19 @@ export async function GET(req: Request) {
 
     // Set date range (default to current month)
     let currentDate = new Date();
-    
+
     if (monthParam && yearParam) {
       currentDate = new Date(parseInt(yearParam), parseInt(monthParam) - 1, 1);
     }
-    
+
     // Get start and end of the displayed calendar (including adjacent months)
     const prevMonth = subMonths(currentDate, 1);
     const nextMonth = addMonths(currentDate, 1);
-    
+
     const start = startOfMonth(prevMonth);
     const end = endOfMonth(nextMonth);
 
-    // Get tasks with due dates in the range
+    // Get all tasks with due dates in the range that the user has access to
     const tasks = await prisma.task.findMany({
       where: {
         dueDate: {
@@ -40,12 +40,17 @@ export async function GET(req: Request) {
           lte: end,
         },
         OR: [
+          // Tasks assigned to the user
           { assigneeId: session.user.id },
+          // Tasks created by the user
           { creatorId: session.user.id },
+          // Tasks in projects the user has access to
           {
             project: {
               OR: [
+                // Projects owned by the user
                 { ownerId: session.user.id },
+                // Projects where the user is a member
                 {
                   members: {
                     some: {
@@ -53,6 +58,7 @@ export async function GET(req: Request) {
                     },
                   },
                 },
+                // Public projects
                 { isPublic: true },
               ],
             },

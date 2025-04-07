@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { 
-  format, 
-  startOfMonth, 
-  endOfMonth, 
-  eachDayOfInterval, 
-  isSameDay, 
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameDay,
   isSameMonth,
-  addMonths, 
+  addMonths,
   subMonths,
   startOfWeek,
   endOfWeek,
@@ -20,20 +20,20 @@ import {
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Plus, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Plus,
   Filter,
   Calendar as CalendarIcon
 } from 'lucide-react';
@@ -71,21 +71,21 @@ export default function CalendarPage() {
   useEffect(() => {
     const start = startOfMonth(currentMonth);
     const end = endOfMonth(currentMonth);
-    
+
     // Get all days in the month
     const monthDays = eachDayOfInterval({ start, end });
-    
+
     // Get the start of the first week (might be in previous month)
     const firstWeekStart = startOfWeek(start, { weekStartsOn: 0 });
-    
+
     // Get the end of the last week (might be in next month)
     const lastWeekEnd = endOfWeek(end, { weekStartsOn: 0 });
-    
+
     // Get all days to display in the calendar
     const days = eachDayOfInterval({ start: firstWeekStart, end: lastWeekEnd });
-    
+
     setCalendarDays(days);
-    
+
     fetchTasks();
     fetchProjects();
   }, [currentMonth]);
@@ -96,22 +96,29 @@ export default function CalendarPage() {
     }
   }, [tasks, projectFilter]);
 
+  // Initialize filtered tasks with all tasks when tasks are first loaded
+  useEffect(() => {
+    if (tasks.length > 0 && filteredTasks.length === 0) {
+      setFilteredTasks(tasks);
+    }
+  }, [tasks, filteredTasks.length]);
+
   const fetchTasks = async () => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/tasks/calendar');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch tasks');
       }
-      
+
       const data = await response.json();
       setTasks(data);
       setFilteredTasks(data);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast.error('Failed to load tasks');
-      
+
       // Mock data for demonstration
       const mockTasks = Array.from({ length: 20 }, (_, i) => ({
         id: `task-${i + 1}`,
@@ -135,7 +142,7 @@ export default function CalendarPage() {
           image: null,
         },
       }));
-      
+
       setTasks(mockTasks);
       setFilteredTasks(mockTasks);
     } finally {
@@ -146,23 +153,23 @@ export default function CalendarPage() {
   const fetchProjects = async () => {
     try {
       const response = await fetch('/api/projects');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch projects');
       }
-      
+
       const data = await response.json();
       setProjects(data);
     } catch (error) {
       console.error('Error fetching projects:', error);
-      
+
       // Mock data for demonstration
       const mockProjects = [
         { id: 'project-1', name: 'Marketing', color: '#4299E1' },
         { id: 'project-2', name: 'Development', color: '#48BB78' },
         { id: 'project-3', name: 'Design', color: '#ED8936' },
       ];
-      
+
       setProjects(mockProjects);
     }
   };
@@ -234,29 +241,54 @@ export default function CalendarPage() {
             <Button variant="outline" size="icon" onClick={nextMonth}>
               <ChevronRight className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => setCurrentMonth(new Date())}
             >
               Today
             </Button>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">Filter by:</span>
             <Select value={projectFilter} onValueChange={setProjectFilter}>
-              <SelectTrigger className="w-[150px]">
-                <Filter className="h-4 w-4 mr-2" />
-                <span>Project</span>
+              <SelectTrigger className="w-[180px]">
+                <div className="flex items-center">
+                  <Filter className="h-4 w-4 mr-2" />
+                  {projectFilter === 'all' ? (
+                    <span>All Projects</span>
+                  ) : (
+                    <span>
+                      {projects.find(p => p.id === projectFilter)?.name || 'Project'}
+                    </span>
+                  )}
+                </div>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Projects</SelectItem>
                 {projects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
-                    {project.name}
+                    <div className="flex items-center">
+                      <div
+                        className="w-2 h-2 rounded-full mr-2"
+                        style={{ backgroundColor: project.color }}
+                      />
+                      {project.name}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {projectFilter !== 'all' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setProjectFilter('all')}
+                className="text-xs"
+              >
+                Clear filter
+              </Button>
+            )}
           </div>
         </div>
 
