@@ -22,6 +22,7 @@ model User {
   memberProjects    ProjectMember[]     @relation("ProjectMember")
   assignedTasks     Task[]              @relation("TaskAssignee")
   createdTasks      Task[]              @relation("TaskCreator")
+  recurringTasks    RecurringTask[]     @relation("RecurringTaskCreator")
   comments          Comment[]           @relation("CommentAuthor")
   notifications     Notification[]      @relation("NotificationRecipient")
   mentionedIn       Mention[]           @relation("MentionedUser")
@@ -262,7 +263,7 @@ model RecurringTask {
   projectId         String
   creatorId         String
   project           Project             @relation("ProjectRecurringTasks", fields: [projectId], references: [id], onDelete: Cascade)
-  creator           User                @relation("TaskCreator", fields: [creatorId], references: [id])
+  creator           User                @relation("RecurringTaskCreator", fields: [creatorId], references: [id])
 }
 
 enum RecurringFrequency {
