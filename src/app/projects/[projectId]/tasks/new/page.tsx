@@ -40,13 +40,12 @@ interface Project {
     id: string;
     name: string;
   }>;
-  members: Array<{
-    user: {
-      id: string;
-      name: string;
-      email: string;
-    };
-  }>;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
 }
 
 interface Task {
@@ -58,6 +57,7 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [project, setProject] = useState<Project | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
@@ -97,6 +97,13 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
           form.setValue('sectionId', projectData.sections[0].id);
         }
 
+        // Fetch all users
+        const usersResponse = await fetch('/api/users');
+        if (usersResponse.ok) {
+          const usersData = await usersResponse.json();
+          setUsers(usersData);
+        }
+
         // Fetch project tasks for parent task selection
         const tasksResponse = await fetch(`/api/projects/${projectId}/tasks`);
         if (tasksResponse.ok) {
@@ -104,8 +111,8 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
           setTasks(tasksData);
         }
       } catch (error) {
-        console.error('Błąd podczas pobierania danych projektu:', error);
-        toast.error('Nie udało się załadować danych projektu');
+        console.error('Błąd podczas pobierania danych projektu lub użytkowników:', error);
+        toast.error('Nie udało się załadować danych projektu lub użytkowników');
       } finally {
         setIsLoadingData(false);
       }
@@ -388,9 +395,9 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="unassigned">Nieprzypisany</SelectItem>
-                            {project.members.map((member) => (
-                              <SelectItem key={member.user.id} value={member.user.id}>
-                                {member.user.name}
+                            {users.map((user) => (
+                              <SelectItem key={user.id} value={user.id}>
+                                {user.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
