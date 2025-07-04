@@ -308,12 +308,20 @@ export default function TasksPage() {
     return due < now;
   };
 
+  const handleCreateTask = () => {
+    if (projectFilter !== 'all') {
+      router.push(`/projects/${projectFilter}/tasks/new`);
+    } else {
+      router.push('/tasks/new');
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Moje zadania</h1>
-          <Button onClick={() => router.push('/dashboard')}>
+          <Button onClick={handleCreateTask}>
             <Plus className="h-4 w-4 mr-2" />
             Nowe zadanie
           </Button>
@@ -408,7 +416,7 @@ export default function TasksPage() {
                         ? 'Spróbuj dostosować filtry, aby zobaczyć więcej zadań'
                         : 'Nie masz przypisanych żadnych zadań'}
                     </p>
-                    <Button onClick={() => router.push('/dashboard')}>
+                    <Button onClick={handleCreateTask}>
                       <Plus className="h-4 w-4 mr-2" />
                       Utwórz zadanie
                     </Button>
