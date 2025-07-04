@@ -141,11 +141,11 @@ export function KanbanBoard({ projectId, initialTasks, sections, onCreateTask, o
         });
 
         if (!response.ok) {
-          throw new Error('Failed to update task');
+          throw new Error('Nie udało się zaktualizować zadania');
         }
       } catch (error) {
-        console.error('Error updating task:', error);
-        toast.error('Failed to update task status');
+        console.error('Błąd podczas aktualizacji zadania:', error);
+        toast.error('Nie udało się zaktualizować statusu zadania');
       } finally {
         setLoading(false);
       }
@@ -156,13 +156,13 @@ export function KanbanBoard({ projectId, initialTasks, sections, onCreateTask, o
 
   const getStatusFromSectionName = (sectionName: string): string => {
     const name = sectionName.toUpperCase();
-    if (name.includes('TODO') || name.includes('TO DO') || name.includes('BACKLOG')) {
+    if (name.includes('TODO') || name.includes('DO ZROBIENIA') || name.includes('BACKLOG')) {
       return 'TODO';
-    } else if (name.includes('PROGRESS') || name.includes('DOING')) {
+    } else if (name.includes('PROGRESS') || name.includes('W TOKU')) {
       return 'IN_PROGRESS';
-    } else if (name.includes('REVIEW')) {
+    } else if (name.includes('REVIEW') || name.includes('RECENZJA')) {
       return 'REVIEW';
-    } else if (name.includes('DONE') || name.includes('COMPLETE')) {
+    } else if (name.includes('DONE') || name.includes('ZAKOŃCZONE')) {
       return 'DONE';
     }
     return 'TODO';
@@ -279,7 +279,7 @@ export function KanbanBoard({ projectId, initialTasks, sections, onCreateTask, o
                       onClick={() => onCreateTask(column.id)}
                     >
                       <PlusCircle className="h-4 w-4 mr-1" />
-                      Add task
+                      Dodaj zadanie
                     </Button>
                   </div>
                 )}

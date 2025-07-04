@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -70,22 +71,22 @@ export default function NotificationsPage() {
       const response = await fetch('/api/notifications');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch notifications');
+        throw new Error('Nie udało się pobrać powiadomień');
       }
       
       const data = await response.json();
       setNotifications(data);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
-      toast.error('Failed to load notifications');
+      console.error('Błąd podczas pobierania powiadomień:', error);
+      toast.error('Nie udało się załadować powiadomień');
       
       // Mock data for demonstration
       const mockNotifications: Notification[] = [
         {
           id: '1',
           type: 'task_assigned',
-          title: 'Task Assigned',
-          message: 'John Doe assigned you a task: "Complete project proposal"',
+          title: 'Zadanie przypisane',
+          message: 'Jan Kowalski przypisał Ci zadanie: "Ukończ propozycję projektu"',
           createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
           read: false,
           data: {
@@ -94,15 +95,15 @@ export default function NotificationsPage() {
           },
           user: {
             id: 'user-1',
-            name: 'John Doe',
+            name: 'Jan Kowalski',
             image: null,
           },
         },
         {
           id: '2',
           type: 'comment_mention',
-          title: 'Mentioned in Comment',
-          message: 'Jane Smith mentioned you in a comment: "Can @you review this by tomorrow?"',
+          title: 'Wzmianka w komentarzu',
+          message: 'Anna Nowak wspomniała o Tobie w komentarzu: "Czy @możesz to sprawdzić do jutra?"',
           createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
           read: false,
           data: {
@@ -112,15 +113,15 @@ export default function NotificationsPage() {
           },
           user: {
             id: 'user-2',
-            name: 'Jane Smith',
+            name: 'Anna Nowak',
             image: null,
           },
         },
         {
           id: '3',
           type: 'due_date',
-          title: 'Task Due Soon',
-          message: 'Task "Update website content" is due tomorrow',
+          title: 'Zbliżający się termin zadania',
+          message: 'Zadanie "Zaktualizuj treść strony internetowej" ma termin jutro',
           createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
           read: true,
           data: {
@@ -130,8 +131,8 @@ export default function NotificationsPage() {
         {
           id: '4',
           type: 'task_completed',
-          title: 'Task Completed',
-          message: 'Bob Johnson completed the task: "Design new logo"',
+          title: 'Zadanie ukończone',
+          message: 'Piotr Wiśniewski ukończył zadanie: "Zaprojektuj nowe logo"',
           createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
           read: true,
           data: {
@@ -140,15 +141,15 @@ export default function NotificationsPage() {
           },
           user: {
             id: 'user-3',
-            name: 'Bob Johnson',
+            name: 'Piotr Wiśniewski',
             image: null,
           },
         },
         {
           id: '5',
           type: 'project_update',
-          title: 'Project Update',
-          message: 'Project "Website Redesign" has been updated with new tasks',
+          title: 'Aktualizacja projektu',
+          message: 'Projekt "Przeprojektowanie strony internetowej" został zaktualizowany o nowe zadania',
           createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
           read: true,
           data: {
@@ -158,8 +159,8 @@ export default function NotificationsPage() {
         {
           id: '6',
           type: 'team_joined',
-          title: 'New Team Member',
-          message: 'Alice Williams joined the team',
+          title: 'Nowy członek zespołu',
+          message: 'Alicja Wójcik dołączyła do zespołu',
           createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
           read: true,
           data: {
@@ -167,7 +168,7 @@ export default function NotificationsPage() {
           },
           user: {
             id: 'user-4',
-            name: 'Alice Williams',
+            name: 'Alicja Wójcik',
             image: null,
           },
         },
@@ -196,11 +197,11 @@ export default function NotificationsPage() {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to mark notification as read');
+        throw new Error('Nie udało się oznaczyć powiadomienia jako przeczytane');
       }
     } catch (error) {
-      console.error('Error marking notification as read:', error);
-      toast.error('Failed to mark notification as read');
+      console.error('Błąd podczas oznaczania powiadomienia jako przeczytane:', error);
+      toast.error('Nie udało się oznaczyć powiadomienia jako przeczytane');
       
       // Revert the optimistic update
       fetchNotifications();
@@ -222,13 +223,13 @@ export default function NotificationsPage() {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to mark all notifications as read');
+        throw new Error('Nie udało się oznaczyć wszystkich powiadomień jako przeczytane');
       }
       
-      toast.success('All notifications marked as read');
+      toast.success('Wszystkie powiadomienia zostały oznaczone jako przeczytane');
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-      toast.error('Failed to mark all notifications as read');
+      console.error('Błąd podczas oznaczania wszystkich powiadomień jako przeczytane:', error);
+      toast.error('Nie udało się oznaczyć wszystkich powiadomień jako przeczytane');
       
       // Revert the optimistic update
       fetchNotifications();
@@ -250,13 +251,13 @@ export default function NotificationsPage() {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to delete notification');
+        throw new Error('Nie udało się usunąć powiadomienia');
       }
       
-      toast.success('Notification deleted');
+      toast.success('Powiadomienie usunięte');
     } catch (error) {
-      console.error('Error deleting notification:', error);
-      toast.error('Failed to delete notification');
+      console.error('Błąd podczas usuwania powiadomienia:', error);
+      toast.error('Nie udało się usunąć powiadomienia');
       
       // Revert the optimistic update
       fetchNotifications();
@@ -328,9 +329,9 @@ export default function NotificationsPage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
-            <h1 className="text-3xl font-bold">Notifications</h1>
+            <h1 className="text-3xl font-bold">Powiadomienia</h1>
             {unreadCount > 0 && (
-              <Badge className="ml-2 bg-primary">{unreadCount} new</Badge>
+              <Badge className="ml-2 bg-primary">{unreadCount} nowe</Badge>
             )}
           </div>
           <div className="flex space-x-2">
@@ -341,7 +342,7 @@ export default function NotificationsPage() {
               disabled={isMarkingAllRead || unreadCount === 0}
             >
               <CheckCheck className="h-4 w-4 mr-2" />
-              Mark All Read
+              Oznacz wszystkie jako przeczytane
             </Button>
             <Button 
               variant="outline" 
@@ -349,7 +350,7 @@ export default function NotificationsPage() {
               onClick={() => router.push('/settings')}
             >
               <Settings className="h-4 w-4 mr-2" />
-              Notification Settings
+              Ustawienia powiadomień
             </Button>
           </div>
         </div>
@@ -357,25 +358,25 @@ export default function NotificationsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid grid-cols-3 sm:grid-cols-7 w-full">
             <TabsTrigger value="all" className="text-xs sm:text-sm">
-              All
+              Wszystkie
             </TabsTrigger>
             <TabsTrigger value="unread" className="text-xs sm:text-sm">
-              Unread
+              Nieprzeczytane
             </TabsTrigger>
             <TabsTrigger value="task_assigned" className="text-xs sm:text-sm">
-              Assigned
+              Przypisane
             </TabsTrigger>
             <TabsTrigger value="task_completed" className="text-xs sm:text-sm">
-              Completed
+              Ukończone
             </TabsTrigger>
             <TabsTrigger value="comment_mention" className="text-xs sm:text-sm">
-              Mentions
+              Wzmianki
             </TabsTrigger>
             <TabsTrigger value="due_date" className="text-xs sm:text-sm">
-              Due Soon
+              Zbliżające się
             </TabsTrigger>
             <TabsTrigger value="project_update" className="text-xs sm:text-sm">
-              Updates
+              Aktualizacje
             </TabsTrigger>
           </TabsList>
           
@@ -383,13 +384,13 @@ export default function NotificationsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle>
-                  {activeTab === 'all' && 'All Notifications'}
-                  {activeTab === 'unread' && 'Unread Notifications'}
-                  {activeTab === 'task_assigned' && 'Task Assignments'}
-                  {activeTab === 'task_completed' && 'Completed Tasks'}
-                  {activeTab === 'comment_mention' && 'Comment Mentions'}
-                  {activeTab === 'due_date' && 'Due Date Reminders'}
-                  {activeTab === 'project_update' && 'Project Updates'}
+                  {activeTab === 'all' && 'Wszystkie powiadomienia'}
+                  {activeTab === 'unread' && 'Nieprzeczytane powiadomienia'}
+                  {activeTab === 'task_assigned' && 'Przypisania zadań'}
+                  {activeTab === 'task_completed' && 'Ukończone zadania'}
+                  {activeTab === 'comment_mention' && 'Wzmianki w komentarzach'}
+                  {activeTab === 'due_date' && 'Przypomnienia o terminach'}
+                  {activeTab === 'project_update' && 'Aktualizacje projektów'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -409,13 +410,13 @@ export default function NotificationsPage() {
                 ) : filteredNotifications.length === 0 ? (
                   <div className="text-center py-12">
                     <Bell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No notifications</h3>
+                    <h3 className="text-lg font-medium mb-2">Brak powiadomień</h3>
                     <p className="text-muted-foreground mb-4">
                       {activeTab === 'all'
-                        ? 'You have no notifications at the moment'
+                        ? 'Nie masz obecnie żadnych powiadomień'
                         : activeTab === 'unread'
-                        ? 'You have no unread notifications'
-                        : `You have no ${activeTab.replace('_', ' ')} notifications`}
+                        ? 'Nie masz nieprzeczytanych powiadomień'
+                        : `Nie masz powiadomień typu ${activeTab.replace('_', ' ')}`}
                     </p>
                   </div>
                 ) : (
@@ -451,7 +452,7 @@ export default function NotificationsPage() {
                             </h4>
                             <div className="flex items-center">
                               <span className="text-xs text-muted-foreground">
-                                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: pl })}
                               </span>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -486,7 +487,7 @@ export default function NotificationsPage() {
                                       }}
                                     >
                                       <CheckCircle2 className="h-4 w-4 mr-2" />
-                                      Mark as read
+                                      Oznacz jako przeczytane
                                     </DropdownMenuItem>
                                   )}
                                   <DropdownMenuItem
@@ -496,7 +497,7 @@ export default function NotificationsPage() {
                                     }}
                                   >
                                     <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete
+                                    Usuń
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -506,7 +507,7 @@ export default function NotificationsPage() {
                             {notification.message}
                           </p>
                           <div className="mt-2 text-xs text-muted-foreground">
-                            {format(new Date(notification.createdAt), 'MMM d, yyyy • h:mm a')}
+                            {format(new Date(notification.createdAt), 'd MMM, yyyy • HH:mm', { locale: pl })}
                           </div>
                         </div>
                       </div>

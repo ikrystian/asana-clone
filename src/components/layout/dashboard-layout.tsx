@@ -40,12 +40,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { data: session } = useSession();
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
-    { name: 'My Tasks', href: '/tasks', icon: CheckSquare },
-    { name: 'Calendar', href: '/calendar', icon: Calendar },
-    { name: 'Workload', href: '/workload', icon: Users },
-    { name: 'Reports', href: '/reports', icon: BarChart2 },
-    { name: 'Team', href: '/team', icon: Users },
+    { name: 'Pulpit', href: '/dashboard', icon: LayoutGrid },
+    { name: 'Moje zadania', href: '/tasks', icon: CheckSquare },
+    { name: 'Kalendarz', href: '/calendar', icon: Calendar },
+    { name: 'Obciążenie pracą', href: '/workload', icon: Users },
+    { name: 'Raporty', href: '/reports', icon: BarChart2 },
+    { name: 'Zespół', href: '/team', icon: Users },
   ];
 
   const userInitials = session?.user?.name
@@ -79,7 +79,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
               <span className="text-primary-foreground font-bold">A</span>
             </div>
-            <span className="text-xl font-bold">Asana Clone</span>
+            <span className="text-xl font-bold">Klon Asany</span>
           </Link>
           <Button
             variant="ghost"
@@ -94,7 +94,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <Button variant="outline" className="w-full justify-start" asChild>
             <Link href="/projects/new">
               <PlusSquare className="mr-2 h-4 w-4" />
-              New Project
+              Nowy projekt
             </Link>
           </Button>
         </div>
@@ -122,7 +122,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               className="flex items-center px-2 py-2 text-sm font-medium rounded-md text-foreground hover:bg-muted"
             >
               <Settings className="mr-3 h-5 w-5" />
-              Settings
+              Ustawienia
             </Link>
           </div>
         </div>
@@ -145,7 +145,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Szukaj..."
                 className="w-full pl-8 pr-4 py-2 text-sm border rounded-md bg-background"
               />
             </div>
@@ -160,24 +160,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || 'User'} />
+                    <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || 'Użytkownik'} />
                     <AvatarFallback>{userInitials}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>Moje konto</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">Profile</Link>
+                  <Link href="/profile">Profil</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/settings">Settings</Link>
+                  <Link href="/settings">Ustawienia</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                  <span>Wyloguj się</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -85,14 +86,14 @@ export default function ReportsPage() {
       // Fetch project statistics
       const projectsResponse = await fetch('/api/reports/projects');
       if (!projectsResponse.ok) {
-        throw new Error('Failed to fetch project statistics');
+        throw new Error('Nie udało się pobrać statystyk projektu');
       }
       const projectsData = await projectsResponse.json();
 
       // Add an "All Projects" option
       const allProjectsStats = {
         id: 'all',
-        name: 'All Projects',
+        name: 'Wszystkie projekty',
         totalTasks: projectsData.reduce((sum: number, project: any) => sum + project.totalTasks, 0),
         completedTasks: projectsData.reduce((sum: number, project: any) => sum + project.completedTasks, 0),
         overdueTasks: projectsData.reduce((sum: number, project: any) => sum + project.overdueTasks, 0),
@@ -107,7 +108,7 @@ export default function ReportsPage() {
       // Fetch user statistics
       const usersResponse = await fetch('/api/reports/users');
       if (!usersResponse.ok) {
-        throw new Error('Failed to fetch user statistics');
+        throw new Error('Nie udało się pobrać statystyk użytkownika');
       }
       const usersData = await usersResponse.json();
 
@@ -125,7 +126,7 @@ export default function ReportsPage() {
       // Fetch task statistics based on selected time range
       const tasksResponse = await fetch(`/api/reports/tasks?timeRange=${selectedTimeRange}`);
       if (!tasksResponse.ok) {
-        throw new Error('Failed to fetch task statistics');
+        throw new Error('Nie udało się pobrać statystyk zadań');
       }
       const tasksData = await tasksResponse.json();
 
@@ -133,8 +134,8 @@ export default function ReportsPage() {
       setStatusDistribution(tasksData.statusDistribution);
       setPriorityDistribution(tasksData.priorityDistribution);
     } catch (error) {
-      console.error('Error fetching report data:', error);
-      toast.error('Failed to load report data');
+      console.error('Błąd podczas pobierania danych raportu:', error);
+      toast.error('Nie udało się załadować danych raportu');
     } finally {
       setIsLoading(false);
     }
@@ -152,10 +153,10 @@ export default function ReportsPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Reports & Analytics</h1>
+          <h1 className="text-3xl font-bold">Raporty i analityka</h1>
           <Button>
             <Download className="h-4 w-4 mr-2" />
-            Export Report
+            Eksportuj raport
           </Button>
         </div>
 
@@ -166,7 +167,7 @@ export default function ReportsPage() {
               onValueChange={setSelectedProject}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select project" />
+                <SelectValue placeholder="Wybierz projekt" />
               </SelectTrigger>
               <SelectContent>
                 {projectStats.map(project => (
@@ -183,12 +184,12 @@ export default function ReportsPage() {
               onValueChange={setSelectedTimeRange}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select time range" />
+                <SelectValue placeholder="Wybierz zakres czasu" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="week">Last Week</SelectItem>
-                <SelectItem value="month">Last Month</SelectItem>
-                <SelectItem value="quarter">Last Quarter</SelectItem>
+                <SelectItem value="week">Ostatni tydzień</SelectItem>
+                <SelectItem value="month">Ostatni miesiąc</SelectItem>
+                <SelectItem value="quarter">Ostatni kwartał</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -215,7 +216,7 @@ export default function ReportsPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center">
                     <CheckCircle2 className="h-4 w-4 mr-2 text-green-500" />
-                    Completion Rate
+                    Współczynnik ukończenia
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -227,7 +228,7 @@ export default function ReportsPage() {
                     className="bg-green-200"
                   />
                   <div className="text-xs text-muted-foreground mt-2">
-                    {getCurrentProject().completedTasks} of {getCurrentProject().totalTasks} tasks completed
+                    {getCurrentProject().completedTasks} z {getCurrentProject().totalTasks} ukończonych zadań
                   </div>
                 </CardContent>
               </Card>
@@ -236,7 +237,7 @@ export default function ReportsPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center">
                     <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
-                    Overdue Tasks
+                    Zaległe zadania
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -248,7 +249,7 @@ export default function ReportsPage() {
                     className="bg-red-200"
                   />
                   <div className="text-xs text-muted-foreground mt-2">
-                    {Math.round((getCurrentProject().overdueTasks / getCurrentProject().totalTasks) * 100)}% of total tasks
+                    {Math.round((getCurrentProject().overdueTasks / getCurrentProject().totalTasks) * 100)}% wszystkich zadań
                   </div>
                 </CardContent>
               </Card>
@@ -257,7 +258,7 @@ export default function ReportsPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-blue-500" />
-                    Upcoming Tasks
+                    Nadchodzące zadania
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -269,7 +270,7 @@ export default function ReportsPage() {
                     className="bg-blue-200"
                   />
                   <div className="text-xs text-muted-foreground mt-2">
-                    Due in the next 7 days
+                    Termin w ciągu najbliższych 7 dni
                   </div>
                 </CardContent>
               </Card>
@@ -278,16 +279,16 @@ export default function ReportsPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center">
                     <Clock className="h-4 w-4 mr-2 text-yellow-500" />
-                    Avg. Completion Time
+                    Śr. czas ukończenia
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold mb-2">
-                    2.4 days
+                    2.4 dni
                   </div>
                   <Progress value={60} className="bg-yellow-200" />
                   <div className="text-xs text-muted-foreground mt-2">
-                    From task creation to completion
+                    Od utworzenia zadania do jego ukończenia
                   </div>
                 </CardContent>
               </Card>
@@ -297,15 +298,15 @@ export default function ReportsPage() {
               <TabsList>
                 <TabsTrigger value="tasks">
                   <BarChart2 className="h-4 w-4 mr-2" />
-                  Task Metrics
+                  Metryki zadań
                 </TabsTrigger>
                 <TabsTrigger value="team">
                   <Users className="h-4 w-4 mr-2" />
-                  Team Performance
+                  Wydajność zespołu
                 </TabsTrigger>
                 <TabsTrigger value="time">
                   <Calendar className="h-4 w-4 mr-2" />
-                  Time Analysis
+                  Analiza czasu
                 </TabsTrigger>
               </TabsList>
 
@@ -313,7 +314,7 @@ export default function ReportsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Task Status Distribution</CardTitle>
+                      <CardTitle>Rozkład statusów zadań</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="h-80">
@@ -343,7 +344,7 @@ export default function ReportsPage() {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle>Task Priority Distribution</CardTitle>
+                      <CardTitle>Rozkład priorytetów zadań</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="h-80">
@@ -362,7 +363,7 @@ export default function ReportsPage() {
                             <YAxis />
                             <Tooltip />
                             <Legend />
-                            <Bar dataKey="value" name="Tasks">
+                            <Bar dataKey="value" name="Zadania">
                               {priorityDistribution.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
                               ))}
@@ -378,7 +379,7 @@ export default function ReportsPage() {
               <TabsContent value="team" className="mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Team Member Performance</CardTitle>
+                    <CardTitle>Wydajność członków zespołu</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-96">
@@ -397,8 +398,8 @@ export default function ReportsPage() {
                           <YAxis />
                           <Tooltip />
                           <Legend />
-                          <Bar dataKey="tasksAssigned" name="Tasks Assigned" fill="#3b82f6" />
-                          <Bar dataKey="tasksCompleted" name="Tasks Completed" fill="#22c55e" />
+                          <Bar dataKey="tasksAssigned" name="Zadania przypisane" fill="#3b82f6" />
+                          <Bar dataKey="tasksCompleted" name="Zadania ukończone" fill="#22c55e" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -409,7 +410,7 @@ export default function ReportsPage() {
               <TabsContent value="time" className="mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Task Activity Over Time</CardTitle>
+                    <CardTitle>Aktywność zadań w czasie</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-96">
@@ -428,8 +429,8 @@ export default function ReportsPage() {
                           <YAxis />
                           <Tooltip />
                           <Legend />
-                          <Line type="monotone" dataKey="tasksCreated" name="Tasks Created" stroke="#3b82f6" activeDot={{ r: 8 }} />
-                          <Line type="monotone" dataKey="tasksCompleted" name="Tasks Completed" stroke="#22c55e" />
+                          <Line type="monotone" dataKey="tasksCreated" name="Zadania utworzone" stroke="#3b82f6" activeDot={{ r: 8 }} />
+                          <Line type="monotone" dataKey="tasksCompleted" name="Zadania ukończone" stroke="#22c55e" />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>

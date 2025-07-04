@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -150,7 +151,7 @@ interface Task {
 }
 
 const commentSchema = z.object({
-  content: z.string().min(1, 'Comment cannot be empty'),
+  content: z.string().min(1, 'Komentarz nie może być pusty'),
 });
 
 type CommentFormValues = z.infer<typeof commentSchema>;
@@ -184,13 +185,13 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
         // Fetch task details
         const taskResponse = await fetch(`/api/tasks/${taskId}`);
         if (!taskResponse.ok) {
-          throw new Error('Failed to fetch task');
+          throw new Error('Nie udało się pobrać zadania');
         }
         const taskData = await taskResponse.json();
         setTask(taskData);
       } catch (error) {
-        console.error('Error fetching task data:', error);
-        toast.error('Failed to load task data');
+        console.error('Błąd podczas pobierania danych zadania:', error);
+        toast.error('Nie udało się załadować danych zadania');
       } finally {
         setIsLoading(false);
       }
@@ -221,16 +222,16 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update task status');
+        throw new Error('Nie udało się zaktualizować statusu zadania');
       }
 
       const updatedTask = await response.json();
       setTask(updatedTask);
 
-      toast.success(`Task marked as ${newStatus === 'DONE' ? 'complete' : newStatus.toLowerCase().replace('_', ' ')}`);
+      toast.success(`Zadanie oznaczone jako ${newStatus === 'DONE' ? 'ukończone' : newStatus.toLowerCase().replace('_', ' ')}`);
     } catch (error) {
-      console.error('Error updating task status:', error);
-      toast.error('Failed to update task status');
+      console.error('Błąd podczas aktualizacji statusu zadania:', error);
+      toast.error('Nie udało się zaktualizować statusu zadania');
     }
   };
 
@@ -247,7 +248,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update subtask status');
+        throw new Error('Nie udało się zaktualizować statusu podzadania');
       }
 
       // Update the task in the UI
@@ -264,10 +265,10 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
         };
       });
 
-      toast.success(`Subtask marked as ${completed ? 'complete' : 'incomplete'}`);
+      toast.success(`Podzadanie oznaczone jako ${completed ? 'ukończone' : 'nieukończone'}`);
     } catch (error) {
-      console.error('Error updating subtask status:', error);
-      toast.error('Failed to update subtask status');
+      console.error('Błąd podczas aktualizacji statusu podzadania:', error);
+      toast.error('Nie udało się zaktualizować statusu podzadania');
     }
   };
 
@@ -288,7 +289,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       });
 
       if (!response.ok) {
-        throw new Error('Failed to add comment');
+        throw new Error('Nie udało się dodać komentarza');
       }
 
       const newComment = await response.json();
@@ -306,10 +307,10 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       // Reset the form
       commentForm.reset();
 
-      toast.success('Comment added successfully');
+      toast.success('Komentarz został pomyślnie dodany');
     } catch (error) {
-      console.error('Error adding comment:', error);
-      toast.error('Failed to add comment');
+      console.error('Błąd podczas dodawania komentarza:', error);
+      toast.error('Nie udało się dodać komentarza');
     } finally {
       setIsSubmittingComment(false);
     }
@@ -326,17 +327,14 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete task');
+        throw new Error('Nie udało się usunąć zadania');
       }
 
-      toast.success('Task deleted successfully');
+      toast.success('Zadanie zostało pomyślnie usunięte');
       router.push(task.project ? `/projects/${task.project.id}` : '/dashboard');
     } catch (error) {
-      console.error('Error deleting task:', error);
-      toast.error('Failed to delete task');
-    } finally {
-      setIsDeleting(false);
-      setDeleteDialogOpen(false);
+      console.error('Błąd podczas usuwania zadania:', error);
+      toast.error('Nie udało się usunąć zadania');
     }
   };
 
@@ -374,7 +372,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
             <div className="flex items-center justify-between">
               <Button variant="ghost" onClick={() => router.back()}>
                 <ChevronLeft className="mr-2 h-4 w-4" />
-                Back
+                Wróć
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -383,15 +381,15 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Task Options</DropdownMenuLabel>
+                  <DropdownMenuLabel>Opcje zadania</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => router.push(`/tasks/${task.id}/edit`)}>
                     <Edit className="mr-2 h-4 w-4" />
-                    Edit Task
+                    Edytuj zadanie
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push(task.project ? `/projects/${task.project.id}/tasks/new?parentId=${task.id}` : `/dashboard?parentId=${task.id}`)}>
                     <PlusSquare className="mr-2 h-4 w-4" />
-                    Add Subtask
+                    Dodaj podzadanie
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -399,7 +397,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                     onClick={() => setDeleteDialogOpen(true)}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Task
+                    Usuń zadanie
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -421,7 +419,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                     {task.project.name}
                   </Link>
                 ) : (
-                  <span className="text-sm text-muted-foreground">No project</span>
+                  <span className="text-sm text-muted-foreground">Brak projektu</span>
                 )}
                 {task.parentTask && (
                   <>
@@ -444,9 +442,9 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                   className="cursor-pointer"
                   onClick={() => handleStatusChange(task.status === 'DONE' ? 'TODO' : 'DONE')}
                 >
-                  {task.status === 'TODO' ? 'To Do' :
-                   task.status === 'IN_PROGRESS' ? 'In Progress' :
-                   task.status === 'REVIEW' ? 'Review' : 'Done'}
+                  {task.status === 'TODO' ? 'Do zrobienia' :
+                   task.status === 'IN_PROGRESS' ? 'W toku' :
+                   task.status === 'REVIEW' ? 'Recenzja' : 'Zakończone'}
                 </Badge>
 
                 <Badge
@@ -458,13 +456,13 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                     'border-red-500 text-red-500'
                   }`}
                 >
-                  {task.priority} Priority
+                  Priorytet {task.priority}
                 </Badge>
 
                 {task.dueDate && (
                   <Badge variant="outline" className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {format(new Date(task.dueDate), 'MMM d, yyyy')}
+                    {format(new Date(task.dueDate), 'd MMM, yyyy', { locale: pl })}
                   </Badge>
                 )}
               </div>
@@ -474,7 +472,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
               <div className="space-y-6">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Details</CardTitle>
+                    <CardTitle className="text-sm font-medium">Szczegóły</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -482,31 +480,31 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm" className="h-8 text-xs">
-                            {task.status === 'TODO' ? 'To Do' :
-                             task.status === 'IN_PROGRESS' ? 'In Progress' :
-                             task.status === 'REVIEW' ? 'Review' : 'Done'}
+                            {task.status === 'TODO' ? 'Do zrobienia' :
+                             task.status === 'IN_PROGRESS' ? 'W toku' :
+                             task.status === 'REVIEW' ? 'Recenzja' : 'Zakończone'}
                             <ChevronLeft className="ml-1 h-3 w-3 rotate-270" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleStatusChange('TODO')}>
-                            To Do
+                            Do zrobienia
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleStatusChange('IN_PROGRESS')}>
-                            In Progress
+                            W toku
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleStatusChange('REVIEW')}>
-                            Review
+                            Recenzja
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleStatusChange('DONE')}>
-                            Done
+                            Zakończone
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Assignee</span>
+                      <span className="text-sm text-muted-foreground">Przypisany</span>
                       <div>
                         {task.assignee ? (
                           <div className="flex items-center">
@@ -518,30 +516,30 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                           </div>
                         ) : (
                           <Button variant="ghost" size="sm" className="h-8 text-xs">
-                            Unassigned
+                            Nieprzypisany
                           </Button>
                         )}
                       </div>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Due Date</span>
+                      <span className="text-sm text-muted-foreground">Termin</span>
                       <div>
                         {task.dueDate ? (
                           <div className="flex items-center text-sm">
                             <Calendar className="mr-1 h-3 w-3" />
-                            {format(new Date(task.dueDate), 'MMM d, yyyy')}
+                            {format(new Date(task.dueDate), 'd MMM, yyyy', { locale: pl })}
                           </div>
                         ) : (
                           <Button variant="ghost" size="sm" className="h-8 text-xs">
-                            No due date
+                            Brak terminu
                           </Button>
                         )}
                       </div>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Created by</span>
+                      <span className="text-sm text-muted-foreground">Utworzone przez</span>
                       <div className="flex items-center">
                         <Avatar className="h-6 w-6 mr-2">
                           <AvatarImage src={task.creator.image || ''} alt={task.creator.name} />
@@ -552,9 +550,9 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Created</span>
+                      <span className="text-sm text-muted-foreground">Utworzono</span>
                       <span className="text-sm">
-                        {format(new Date(task.createdAt), 'MMM d, yyyy')}
+                        {format(new Date(task.createdAt), 'd MMM, yyyy', { locale: pl })}
                       </span>
                     </div>
                   </CardContent>
@@ -563,7 +561,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                 {task.subtasks && task.subtasks.length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Subtasks</CardTitle>
+                      <CardTitle className="text-sm font-medium">Podzadania</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-2">
@@ -612,7 +610,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                         onClick={() => router.push(task.project ? `/projects/${task.project.id}/tasks/new?parentId=${task.id}` : `/dashboard?parentId=${task.id}`)}
                       >
                         <PlusSquare className="mr-1 h-3 w-3" />
-                        Add Subtask
+                        Dodaj podzadanie
                       </Button>
                     </CardFooter>
                   </Card>
@@ -621,7 +619,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                 {task.attachments && task.attachments.length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Attachments</CardTitle>
+                      <CardTitle className="text-sm font-medium">Załączniki</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-2">
@@ -656,7 +654,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                 {task.project && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Custom Fields</CardTitle>
+                      <CardTitle className="text-sm font-medium">Pola niestandardowe</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CustomFields
@@ -674,7 +672,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
               <div className="md:col-span-2 space-y-6">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Description</CardTitle>
+                    <CardTitle className="text-sm font-medium">Opis</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {task.description ? (
@@ -684,20 +682,20 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                         ))}
                       </div>
                     ) : (
-                      <p className="text-muted-foreground text-sm">No description provided</p>
+                      <p className="text-muted-foreground text-sm">Brak opisu</p>
                     )}
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Comments</CardTitle>
+                    <CardTitle className="text-sm font-medium">Komentarze</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4 max-h-96 overflow-y-auto mb-4">
                       {!task.comments || task.comments.length === 0 ? (
                         <p className="text-muted-foreground text-sm text-center py-4">
-                          No comments yet
+                          Brak komentarzy
                         </p>
                       ) : (
                         task.comments.map((comment) => (
@@ -710,7 +708,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                               <div className="flex items-center space-x-2">
                                 <span className="font-medium text-sm">{comment.author.name}</span>
                                 <span className="text-xs text-muted-foreground">
-                                  {format(new Date(comment.createdAt), 'MMM d, yyyy h:mm a')}
+                                  {format(new Date(comment.createdAt), 'd MMM, yyyy HH:mm', { locale: pl })}
                                 </span>
                               </div>
                               <div className="mt-1 text-sm">
@@ -735,7 +733,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                               <FormItem>
                                 <FormControl>
                                   <Textarea
-                                    placeholder="Add a comment..."
+                                    placeholder="Dodaj komentarz..."
                                     className="min-h-[80px]"
                                     {...field}
                                   />
@@ -745,7 +743,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                           />
                           <div className="flex justify-end">
                             <Button type="submit" size="sm" disabled={isSubmittingComment}>
-                              {isSubmittingComment ? 'Posting...' : 'Post Comment'}
+                              {isSubmittingComment ? 'Publikowanie...' : 'Opublikuj komentarz'}
                             </Button>
                           </div>
                         </form>
@@ -759,10 +757,10 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Delete Task</DialogTitle>
+                  <DialogTitle>Usuń zadanie</DialogTitle>
                   <DialogDescription>
-                    Are you sure you want to delete this task? This action cannot be undone
-                    and all subtasks, comments, and attachments will be permanently deleted.
+                    Czy na pewno chcesz usunąć to zadanie? Tej akcji nie można cofnąć,
+                    a wszystkie podzadania, komentarze i załączniki zostaną trwale usunięte.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
@@ -771,14 +769,14 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                     onClick={() => setDeleteDialogOpen(false)}
                     disabled={isDeleting}
                   >
-                    Cancel
+                    Anuluj
                   </Button>
                   <Button
                     variant="destructive"
                     onClick={handleDeleteTask}
                     disabled={isDeleting}
                   >
-                    {isDeleting ? 'Deleting...' : 'Delete Task'}
+                    {isDeleting ? 'Usuwanie...' : 'Usuń zadanie'}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -786,12 +784,12 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
           </div>
         ) : (
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold mb-2">Task not found</h2>
+            <h2 className="text-2xl font-bold mb-2">Nie znaleziono zadania</h2>
             <p className="text-muted-foreground mb-4">
-              The task you are looking for does not exist or you do not have access to it.
+              Zadanie, którego szukasz, nie istnieje lub nie masz do niego dostępu.
             </p>
             <Button onClick={() => router.push('/dashboard')}>
-              Return to Dashboard
+              Wróć do pulpitu
             </Button>
           </div>
         )}

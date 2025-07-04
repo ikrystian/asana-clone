@@ -141,7 +141,7 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
         // Fetch project details
         const projectResponse = await fetch(`/api/projects/${projectId}`);
         if (!projectResponse.ok) {
-          throw new Error('Failed to fetch project');
+          throw new Error('Nie udało się pobrać projektu');
         }
         const projectData = await projectResponse.json();
         setProject(projectData);
@@ -149,13 +149,13 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
         // Fetch project tasks
         const tasksResponse = await fetch(`/api/projects/${projectId}/tasks`);
         if (!tasksResponse.ok) {
-          throw new Error('Failed to fetch tasks');
+          throw new Error('Nie udało się pobrać zadań');
         }
         const tasksData = await tasksResponse.json();
         setTasks(tasksData);
       } catch (error) {
-        console.error('Error fetching project data:', error);
-        toast.error('Failed to load project data');
+        console.error('Błąd podczas pobierania danych projektu:', error);
+        toast.error('Nie udało się załadować danych projektu');
       } finally {
         setIsLoading(false);
       }
@@ -174,14 +174,14 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to delete project');
+        throw new Error(error.error || 'Nie udało się usunąć projektu');
       }
 
-      toast.success('Project deleted successfully');
+      toast.success('Projekt został pomyślnie usunięty');
       router.push('/dashboard');
     } catch (error) {
-      console.error('Error deleting project:', error);
-      toast.error('Failed to delete project');
+      console.error('Błąd podczas usuwania projektu:', error);
+      toast.error('Nie udało się usunąć projektu');
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
@@ -232,7 +232,7 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
               <div className="flex space-x-2">
                 <Button onClick={handleCreateTask}>
                   <PlusSquare className="mr-2 h-4 w-4" />
-                  Add Task
+                  Dodaj zadanie
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -241,15 +241,15 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Project Options</DropdownMenuLabel>
+                    <DropdownMenuLabel>Opcje projektu</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push(`/projects/${params.projectId}/settings`)}>
                       <Settings className="mr-2 h-4 w-4" />
-                      Project Settings
+                      Ustawienia projektu
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => router.push(`/projects/${params.projectId}/members`)}>
                       <Users className="mr-2 h-4 w-4" />
-                      Manage Members
+                      Zarządzaj członkami
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -257,7 +257,7 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
                       onClick={() => setDeleteDialogOpen(true)}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Project
+                      Usuń projekt
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -269,28 +269,28 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
                 <TabsList>
                   <TabsTrigger value="list">
                     <ListFilter className="mr-2 h-4 w-4" />
-                    List
+                    Lista
                   </TabsTrigger>
                   <TabsTrigger value="board">
                     <LayoutGrid className="mr-2 h-4 w-4" />
-                    Board
+                    Tablica
                   </TabsTrigger>
                   <TabsTrigger value="calendar">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    Calendar
+                    Kalendarz
                   </TabsTrigger>
                   <TabsTrigger value="gantt">
                     <BarChart2 className="mr-2 h-4 w-4" />
-                    Timeline
+                    Oś czasu
                   </TabsTrigger>
                   <TabsTrigger value="automation">
                     <Settings className="mr-2 h-4 w-4" />
-                    Automation
+                    Automatyzacja
                   </TabsTrigger>
                 </TabsList>
                 <Button variant="outline" size="sm">
                   <ListFilter className="mr-2 h-4 w-4" />
-                  Filter
+                  Filtruj
                 </Button>
               </div>
 
@@ -301,13 +301,13 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
                       <div className="rounded-full bg-muted p-3 mb-4">
                         <PlusSquare className="h-6 w-6 text-muted-foreground" />
                       </div>
-                      <h3 className="text-lg font-medium mb-2">No tasks yet</h3>
+                      <h3 className="text-lg font-medium mb-2">Brak zadań</h3>
                       <p className="text-muted-foreground text-center max-w-sm mb-4">
-                        Get started by creating your first task in this project
+                        Zacznij, tworząc swoje pierwsze zadanie w tym projekcie
                       </p>
                       <Button onClick={handleCreateTask}>
                         <PlusSquare className="mr-2 h-4 w-4" />
-                        Add Task
+                        Dodaj zadanie
                       </Button>
                     </CardContent>
                   </Card>
@@ -377,12 +377,12 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
                                 }}
                               >
                                 {task.status === 'TODO'
-                                  ? 'To Do'
+                                  ? 'Do zrobienia'
                                   : task.status === 'IN_PROGRESS'
-                                  ? 'In Progress'
+                                  ? 'W toku'
                                   : task.status === 'REVIEW'
-                                  ? 'Review'
-                                  : 'Done'}
+                                  ? 'Recenzja'
+                                  : 'Zakończone'}
                               </div>
                             </div>
                           </div>
@@ -406,11 +406,11 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
                       />
                     ) : (
                       <div className="text-center py-12">
-                        <h3 className="text-lg font-medium mb-2">No sections available</h3>
+                        <h3 className="text-lg font-medium mb-2">Brak dostępnych sekcji</h3>
                         <p className="text-muted-foreground mb-4">
-                          Create sections in your project to use the Kanban board view
+                          Utwórz sekcje w swoim projekcie, aby korzystać z widoku tablicy Kanban
                         </p>
-                        <Button variant="outline">Create Sections</Button>
+                        <Button variant="outline">Utwórz sekcje</Button>
                       </div>
                     )}
                   </CardContent>
@@ -458,10 +458,10 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Delete Project</DialogTitle>
+                  <DialogTitle>Usuń projekt</DialogTitle>
                   <DialogDescription>
-                    Are you sure you want to delete this project? This action cannot be undone
-                    and all tasks, comments, and attachments will be permanently deleted.
+                    Czy na pewno chcesz usunąć ten projekt? Tej akcji nie można cofnąć,
+                    a wszystkie zadania, komentarze i załączniki zostaną trwale usunięte.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
@@ -470,14 +470,14 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
                     onClick={() => setDeleteDialogOpen(false)}
                     disabled={isDeleting}
                   >
-                    Cancel
+                    Anuluj
                   </Button>
                   <Button
                     variant="destructive"
                     onClick={handleDeleteProject}
                     disabled={isDeleting}
                   >
-                    {isDeleting ? 'Deleting...' : 'Delete Project'}
+                    {isDeleting ? 'Usuwanie...' : 'Usuń projekt'}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -485,12 +485,12 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
           </>
         ) : (
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold mb-2">Project not found</h2>
+            <h2 className="text-2xl font-bold mb-2">Nie znaleziono projektu</h2>
             <p className="text-muted-foreground mb-4">
-              The project you are looking for does not exist or you do not have access to it.
+              Projekt, którego szukasz, nie istnieje lub nie masz do niego dostępu.
             </p>
             <Button onClick={() => router.push('/dashboard')}>
-              Return to Dashboard
+              Wróć do pulpitu
             </Button>
           </div>
         )}

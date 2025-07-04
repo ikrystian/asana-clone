@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { CalendarIcon, Plus, X, Check, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -97,14 +98,14 @@ export function CustomFields({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update custom field');
+        throw new Error('Nie udało się zaktualizować pola niestandardowego');
       }
 
-      toast.success('Custom field updated');
+      toast.success('Pole niestandardowe zostało zaktualizowane');
       setEditingField(null);
     } catch (error) {
-      console.error('Error updating custom field:', error);
-      toast.error('Failed to update custom field');
+      console.error('Błąd podczas aktualizacji pola niestandardowego:', error);
+      toast.error('Nie udało się zaktualizować pola niestandardowego');
     } finally {
       setIsSubmitting(false);
     }
@@ -128,13 +129,13 @@ export function CustomFields({
                 <FormItem className="flex-1">
                   <FormControl>
                     {field.type === 'TEXT' && (
-                      <Input {...formField} placeholder="Enter text..." />
+                      <Input {...formField} placeholder="Wprowadź tekst..." />
                     )}
                     {field.type === 'NUMBER' && (
                       <Input 
                         {...formField} 
                         type="number" 
-                        placeholder="Enter number..." 
+                        placeholder="Wprowadź liczbę..." 
                       />
                     )}
                     {field.type === 'DATE' && (
@@ -148,7 +149,7 @@ export function CustomFields({
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {formField.value ? format(new Date(formField.value), 'PPP') : <span>Pick a date</span>}
+                            {formField.value ? format(new Date(formField.value), 'PPP', { locale: pl }) : <span>Wybierz datę</span>}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
@@ -167,7 +168,7 @@ export function CustomFields({
                         defaultValue={formField.value}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select an option" />
+                          <SelectValue placeholder="Wybierz opcję" />
                         </SelectTrigger>
                         <SelectContent>
                           {field.options && JSON.parse(field.options).map((option: string) => (
@@ -224,7 +225,7 @@ export function CustomFields({
       case 'DATE':
         return (
           <div className="text-sm">
-            {value ? format(new Date(value), 'PPP') : '-'}
+            {value ? format(new Date(value), 'PPP', { locale: pl }) : '-'}
           </div>
         );
       case 'DROPDOWN':
@@ -252,18 +253,18 @@ export function CustomFields({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-sm font-medium">Custom Fields</h3>
+        <h3 className="text-sm font-medium">Pola niestandardowe</h3>
         {onAddField && (
           <Button variant="ghost" size="sm" onClick={onAddField}>
             <Plus className="h-4 w-4 mr-1" />
-            Add Field
+            Dodaj pole
           </Button>
         )}
       </div>
 
       {customFields.length === 0 ? (
         <div className="text-sm text-muted-foreground text-center py-4">
-          No custom fields available
+          Brak dostępnych pól niestandardowych
         </div>
       ) : (
         <div className="space-y-2">

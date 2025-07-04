@@ -83,7 +83,7 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
 
   const ruleSchema = z.object({
-    name: z.string().min(1, 'Rule name is required'),
+    name: z.string().min(1, 'Nazwa reguły jest wymagana'),
     triggerType: z.enum(['TASK_CREATED', 'TASK_UPDATED', 'TASK_COMPLETED', 'DUE_DATE_APPROACHING']),
     actionType: z.enum(['UPDATE_TASK', 'CREATE_TASK', 'SEND_NOTIFICATION', 'ASSIGN_TASK']),
     isActive: z.boolean().default(true),
@@ -129,10 +129,10 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
       setIsAddDialogOpen(false);
       form.reset();
       
-      toast.success('Automation rule created');
+      toast.success('Reguła automatyzacji została utworzona');
     } catch (error) {
-      console.error('Error creating automation rule:', error);
-      toast.error('Failed to create automation rule');
+      console.error('Błąd podczas tworzenia reguły automatyzacji:', error);
+      toast.error('Nie udało się utworzyć reguły automatyzacji');
     } finally {
       setIsLoading(false);
     }
@@ -148,10 +148,10 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
         )
       );
       
-      toast.success(`Rule ${isActive ? 'activated' : 'deactivated'}`);
+      toast.success(`Reguła ${isActive ? 'aktywna' : 'nieaktywna'}`);
     } catch (error) {
-      console.error('Error toggling automation rule:', error);
-      toast.error('Failed to update automation rule');
+      console.error('Błąd podczas przełączania reguły automatyzacji:', error);
+      toast.error('Nie udało się zaktualizować reguły automatyzacji');
     }
   };
 
@@ -161,10 +161,10 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
       // For now, we'll simulate it
       setRules(prev => prev.filter(rule => rule.id !== ruleId));
       
-      toast.success('Automation rule deleted');
+      toast.success('Reguła automatyzacji została usunięta');
     } catch (error) {
-      console.error('Error deleting automation rule:', error);
-      toast.error('Failed to delete automation rule');
+      console.error('Błąd podczas usuwania reguły automatyzacji:', error);
+      toast.error('Nie udało się usunąć reguły automatyzacji');
     }
   };
 
@@ -172,23 +172,23 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
     try {
       // In a real app, this would be an API call to run a rule
       // For now, we'll simulate it
-      toast.success('Automation rule executed');
+      toast.success('Reguła automatyzacji została wykonana');
     } catch (error) {
-      console.error('Error running automation rule:', error);
-      toast.error('Failed to run automation rule');
+      console.error('Błąd podczas uruchamiania reguły automatyzacji:', error);
+      toast.error('Nie udało się uruchomić reguły automatyzacji');
     }
   };
 
   const getTriggerLabel = (type: string) => {
     switch (type) {
       case 'TASK_CREATED':
-        return 'When a task is created';
+        return 'Gdy zadanie zostanie utworzone';
       case 'TASK_UPDATED':
-        return 'When a task is updated';
+        return 'Gdy zadanie zostanie zaktualizowane';
       case 'TASK_COMPLETED':
-        return 'When a task is completed';
+        return 'Gdy zadanie zostanie ukończone';
       case 'DUE_DATE_APPROACHING':
-        return 'When a due date is approaching';
+        return 'Gdy zbliża się termin wykonania';
       default:
         return type;
     }
@@ -197,13 +197,13 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
   const getActionLabel = (type: string) => {
     switch (type) {
       case 'UPDATE_TASK':
-        return 'Update task';
+        return 'Zaktualizuj zadanie';
       case 'CREATE_TASK':
-        return 'Create a new task';
+        return 'Utwórz nowe zadanie';
       case 'SEND_NOTIFICATION':
-        return 'Send notification';
+        return 'Wyślij powiadomienie';
       case 'ASSIGN_TASK':
-        return 'Assign task';
+        return 'Przypisz zadanie';
       default:
         return type;
     }
@@ -212,19 +212,19 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">Automation Rules</h2>
+        <h2 className="text-xl font-bold">Reguły automatyzacji</h2>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Add Rule
+              Dodaj regułę
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create Automation Rule</DialogTitle>
+              <DialogTitle>Utwórz regułę automatyzacji</DialogTitle>
               <DialogDescription>
-                Automate repetitive tasks with rules that trigger actions based on events.
+                Automatyzuj powtarzalne zadania za pomocą reguł, które wyzwalają akcje na podstawie zdarzeń.
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
@@ -234,9 +234,9 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Rule Name</FormLabel>
+                      <FormLabel>Nazwa reguły</FormLabel>
                       <FormControl>
-                        <Input placeholder="Auto-assign tasks" {...field} />
+                        <Input placeholder="Automatyczne przypisywanie zadań" {...field} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -247,25 +247,25 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
                   name="triggerType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Trigger</FormLabel>
+                      <FormLabel>Wyzwalacz</FormLabel>
                       <Select 
                         onValueChange={field.onChange} 
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a trigger" />
+                            <SelectValue placeholder="Wybierz wyzwalacz" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="TASK_CREATED">When a task is created</SelectItem>
-                          <SelectItem value="TASK_UPDATED">When a task is updated</SelectItem>
-                          <SelectItem value="TASK_COMPLETED">When a task is completed</SelectItem>
-                          <SelectItem value="DUE_DATE_APPROACHING">When a due date is approaching</SelectItem>
+                          <SelectItem value="TASK_CREATED">Gdy zadanie zostanie utworzone</SelectItem>
+                          <SelectItem value="TASK_UPDATED">Gdy zadanie zostanie zaktualizowane</SelectItem>
+                          <SelectItem value="TASK_COMPLETED">Gdy zadanie zostanie ukończone</SelectItem>
+                          <SelectItem value="DUE_DATE_APPROACHING">Gdy zbliża się termin wykonania</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        This event will trigger the automation rule.
+                        To zdarzenie wyzwoli regułę automatyzacji.
                       </FormDescription>
                     </FormItem>
                   )}
@@ -276,25 +276,25 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
                   name="actionType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Action</FormLabel>
+                      <FormLabel>Akcja</FormLabel>
                       <Select 
                         onValueChange={field.onChange} 
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select an action" />
+                            <SelectValue placeholder="Wybierz akcję" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="UPDATE_TASK">Update task</SelectItem>
-                          <SelectItem value="CREATE_TASK">Create a new task</SelectItem>
-                          <SelectItem value="SEND_NOTIFICATION">Send notification</SelectItem>
-                          <SelectItem value="ASSIGN_TASK">Assign task</SelectItem>
+                          <SelectItem value="UPDATE_TASK">Zaktualizuj zadanie</SelectItem>
+                          <SelectItem value="CREATE_TASK">Utwórz nowe zadanie</SelectItem>
+                          <SelectItem value="SEND_NOTIFICATION">Wyślij powiadomienie</SelectItem>
+                          <SelectItem value="ASSIGN_TASK">Przypisz zadanie</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        This action will be performed when the trigger conditions are met.
+                        Ta akcja zostanie wykonana, gdy warunki wyzwalacza zostaną spełnione.
                       </FormDescription>
                     </FormItem>
                   )}
@@ -306,9 +306,9 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                       <div className="space-y-0.5">
-                        <FormLabel>Active</FormLabel>
+                        <FormLabel>Aktywna</FormLabel>
                         <FormDescription>
-                          Enable or disable this automation rule
+                          Włącz lub wyłącz tę regułę automatyzacji
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -324,13 +324,13 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
             </Form>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                Cancel
+                Anuluj
               </Button>
               <Button 
                 onClick={form.handleSubmit(handleAddRule)}
                 disabled={isLoading}
               >
-                {isLoading ? 'Creating...' : 'Create Rule'}
+                {isLoading ? 'Tworzenie...' : 'Utwórz regułę'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -341,13 +341,13 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Settings className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No automation rules yet</h3>
+            <h3 className="text-lg font-medium mb-2">Brak reguł automatyzacji</h3>
             <p className="text-muted-foreground text-center max-w-sm mb-4">
-              Create automation rules to streamline your workflow and reduce manual tasks
+              Utwórz reguły automatyzacji, aby usprawnić przepływ pracy i zredukować zadania manualne
             </p>
             <Button onClick={() => setIsAddDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Create Your First Rule
+              Utwórz swoją pierwszą regułę
             </Button>
           </CardContent>
         </Card>
@@ -363,7 +363,7 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
                         <div className="font-medium">{rule.name}</div>
                         {!rule.isActive && (
                           <Badge variant="outline" className="text-xs">
-                            Inactive
+                            Nieaktywna
                           </Badge>
                         )}
                       </div>
@@ -375,13 +375,13 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <div className="text-sm font-medium">Trigger</div>
+                          <div className="text-sm font-medium">Wyzwalacz</div>
                           <div className="text-sm bg-muted/50 p-2 rounded-md">
                             {getTriggerLabel(rule.trigger.type)}
                           </div>
                           {rule.trigger.conditions.length > 0 && (
                             <div className="space-y-1">
-                              <div className="text-xs font-medium">Conditions</div>
+                              <div className="text-xs font-medium">Warunki</div>
                               {rule.trigger.conditions.map((condition, index) => (
                                 <div key={index} className="text-xs bg-muted/30 p-1 rounded-md">
                                   {condition.field} {condition.operator} {condition.value}
@@ -391,7 +391,7 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
                           )}
                         </div>
                         <div className="space-y-2">
-                          <div className="text-sm font-medium">Actions</div>
+                          <div className="text-sm font-medium">Akcje</div>
                           {rule.actions.map((action, index) => (
                             <div key={index} className="text-sm bg-muted/50 p-2 rounded-md">
                               {getActionLabel(action.type)}
@@ -406,7 +406,7 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
                             onCheckedChange={(checked) => handleToggleRule(rule.id, checked)}
                           />
                           <span className="text-sm">
-                            {rule.isActive ? 'Active' : 'Inactive'}
+                            {rule.isActive ? 'Aktywna' : 'Nieaktywna'}
                           </span>
                         </div>
                         <div className="flex space-x-2">
@@ -416,7 +416,7 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
                             onClick={() => handleRunRule(rule.id)}
                           >
                             <Play className="h-3 w-3 mr-1" />
-                            Run Now
+                            Uruchom teraz
                           </Button>
                           <Button 
                             variant="outline" 
@@ -424,7 +424,7 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
                             onClick={() => setEditingRuleId(rule.id)}
                           >
                             <Settings className="h-3 w-3 mr-1" />
-                            Edit
+                            Edytuj
                           </Button>
                           <Button 
                             variant="outline" 
@@ -432,7 +432,7 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
                             onClick={() => handleDeleteRule(rule.id)}
                           >
                             <Trash2 className="h-3 w-3 mr-1" />
-                            Delete
+                            Usuń
                           </Button>
                         </div>
                       </div>
@@ -449,22 +449,22 @@ export function AutomationRules({ projectId, initialRules }: AutomationRulesProp
       <Dialog open={!!editingRuleId} onOpenChange={(open) => !open && setEditingRuleId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Automation Rule</DialogTitle>
+            <DialogTitle>Edytuj regułę automatyzacji</DialogTitle>
             <DialogDescription>
-              Modify this automation rule's settings.
+              Zmodyfikuj ustawienia tej reguły automatyzacji.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <p className="text-center text-muted-foreground">
-              Rule editing functionality would be implemented in a full version.
+              Funkcjonalność edycji reguł zostanie zaimplementowana w pełnej wersji.
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingRuleId(null)}>
-              Cancel
+              Anuluj
             </Button>
             <Button onClick={() => setEditingRuleId(null)}>
-              Save Changes
+              Zapisz zmiany
             </Button>
           </DialogFooter>
         </DialogContent>

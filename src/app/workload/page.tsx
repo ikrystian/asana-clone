@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks, isSameDay } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,7 +66,7 @@ export default function WorkloadPage() {
 
       fetchWorkloadData();
     } catch (error) {
-      console.error('Error setting up week days:', error);
+      console.error('Błąd podczas ustawiania dni tygodnia:', error);
       // Fallback to empty array
       setWeekDays([]);
     }
@@ -79,33 +80,33 @@ export default function WorkloadPage() {
       const response = await fetch(`/api/workload?week=${weekParam}`);
 
       if (!response.ok) {
-        throw new Error('Failed to fetch workload data');
+        throw new Error('Nie udało się pobrać danych o obciążeniu pracą');
       }
 
       const data = await response.json();
       setWorkloads(data);
     } catch (error) {
-      console.error('Error fetching workload data:', error);
-      toast.error('Failed to load workload data');
+      console.error('Błąd podczas pobierania danych o obciążeniu pracą:', error);
+      toast.error('Nie udało się załadować danych o obciążeniu pracą');
 
       // Mock data for demonstration
       const mockUsers = [
-        { id: '1', name: 'John Doe', email: 'john@example.com', image: null },
-        { id: '2', name: 'Jane Smith', email: 'jane@example.com', image: null },
-        { id: '3', name: 'Bob Johnson', email: 'bob@example.com', image: null },
+        { id: '1', name: 'Jan Kowalski', email: 'jan@example.com', image: null },
+        { id: '2', name: 'Anna Nowak', email: 'anna@example.com', image: null },
+        { id: '3', name: 'Piotr Wiśniewski', email: 'piotr@example.com', image: null },
       ];
 
       const mockWorkloads = mockUsers.map(user => ({
         user,
         tasks: Array.from({ length: Math.floor(Math.random() * 10) + 5 }, (_, i) => ({
           id: `task-${user.id}-${i}`,
-          title: `Task ${i + 1}`,
+          title: `Zadanie ${i + 1}`,
           status: ['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'][Math.floor(Math.random() * 4)],
           priority: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'][Math.floor(Math.random() * 4)],
           dueDate: new Date(Date.now() + (Math.random() * 14 - 7) * 86400000).toISOString(),
           project: {
             id: `project-${Math.floor(Math.random() * 3) + 1}`,
-            name: ['Marketing', 'Development', 'Design'][Math.floor(Math.random() * 3)],
+            name: ['Marketing', 'Rozwój', 'Projekt'][Math.floor(Math.random() * 3)],
             color: ['#4299E1', '#48BB78', '#ED8936'][Math.floor(Math.random() * 3)],
           },
         })),
@@ -168,7 +169,7 @@ export default function WorkloadPage() {
         }
       });
     } catch (error) {
-      console.error('Error filtering tasks for day:', error);
+      console.error('Błąd podczas filtrowania zadań na dany dzień:', error);
       return [];
     }
   };
@@ -184,7 +185,7 @@ export default function WorkloadPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Team Workload</h1>
+          <h1 className="text-3xl font-bold">Obciążenie pracą zespołu</h1>
           <div className="flex space-x-2">
             <Button variant="outline" size="icon" onClick={prevWeek}>
               <ChevronLeft className="h-4 w-4" />
@@ -199,9 +200,9 @@ export default function WorkloadPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-xl">
               {weekDays.length > 0 ? (
-                <>Week of {format(weekDays[0], 'MMM d')} - {format(weekDays[6], 'MMM d, yyyy')}</>
+                <>Tydzień od {format(weekDays[0], 'd MMM', { locale: pl })} - {format(weekDays[6], 'd MMM, yyyy', { locale: pl })}</>
               ) : (
-                'Loading week data...'
+                'Ładowanie danych tygodnia...'
               )}
             </CardTitle>
           </CardHeader>
@@ -222,12 +223,12 @@ export default function WorkloadPage() {
               <div className="space-y-8">
                 {/* Header row with days */}
                 <div className="grid grid-cols-[200px_1fr] gap-4">
-                  <div className="font-medium">Team Member</div>
+                  <div className="font-medium">Członek zespołu</div>
                   <div className="grid grid-cols-7 gap-2">
                     {weekDays.length > 0 ? (
                       weekDays.map((day) => (
                         <div key={day.toISOString()} className="text-center text-sm font-medium">
-                          <div>{format(day, 'EEE')}</div>
+                          <div>{format(day, 'EEE', { locale: pl })}</div>
                           <div>{format(day, 'd')}</div>
                         </div>
                       ))
@@ -258,8 +259,8 @@ export default function WorkloadPage() {
                       </div>
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs">
-                          <span>Workload</span>
-                          <span>{workload.completedTasks}/{workload.totalTasks} tasks</span>
+                          <span>Obciążenie pracą</span>
+                          <span>{workload.completedTasks}/{workload.totalTasks} zadań</span>
                         </div>
                         <Progress
                           value={(workload.completedTasks / Math.max(workload.totalTasks, 1)) * 100}
@@ -274,13 +275,13 @@ export default function WorkloadPage() {
                           {workload.overdueTasks > 0 && (
                             <div className="flex items-center text-red-500">
                               <AlertTriangle className="h-3 w-3 mr-1" />
-                              {workload.overdueTasks} overdue
+                              {workload.overdueTasks} zaległych
                             </div>
                           )}
                           {workload.upcomingTasks > 0 && (
                             <div className="flex items-center text-yellow-500">
                               <Calendar className="h-3 w-3 mr-1" />
-                              {workload.upcomingTasks} upcoming
+                              {workload.upcomingTasks} nadchodzących
                             </div>
                           )}
                         </div>
@@ -314,7 +315,7 @@ export default function WorkloadPage() {
                               >
                                 {dayTasks.length > 0 ? (
                                   <div className="space-y-1">
-                                    <div className="font-medium">{dayTasks.length} tasks</div>
+                                    <div className="font-medium">{dayTasks.length} zadań</div>
                                     {dayTasks.slice(0, 2).map((task) => (
                                       <div
                                         key={task.id}
@@ -329,32 +330,32 @@ export default function WorkloadPage() {
                                     ))}
                                     {dayTasks.length > 2 && (
                                       <div className="text-muted-foreground">
-                                        +{dayTasks.length - 2} more
+                                        +{dayTasks.length - 2} więcej
                                       </div>
                                     )}
                                     {isOverdue && (
                                       <div className="text-red-500 flex items-center">
                                         <AlertTriangle className="h-3 w-3 mr-1" />
-                                        Overdue
+                                        Zaległe
                                       </div>
                                     )}
                                   </div>
                                 ) : (
                                   <div className="flex items-center justify-center h-full text-muted-foreground">
-                                    No tasks
+                                    Brak zadań
                                   </div>
                                 )}
                               </div>
                             );
                           } catch (error) {
-                            console.error('Error rendering day cell:', error);
+                            console.error('Błąd podczas renderowania komórki dnia:', error);
                             return (
                               <div
                                 key={`error-${day.getTime()}`}
                                 className="p-2 rounded-md min-h-[80px] text-xs border border-dashed border-muted-foreground/20"
                               >
                                 <div className="flex items-center justify-center h-full text-muted-foreground">
-                                  Error
+                                  Błąd
                                 </div>
                               </div>
                             );
@@ -367,7 +368,7 @@ export default function WorkloadPage() {
                             className="p-2 rounded-md min-h-[80px] text-xs border border-dashed border-muted-foreground/20"
                           >
                             <div className="flex items-center justify-center h-full text-muted-foreground">
-                              Loading...
+                              Ładowanie...
                             </div>
                           </div>
                         ))

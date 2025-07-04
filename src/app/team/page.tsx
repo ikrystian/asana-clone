@@ -83,84 +83,84 @@ export default function TeamPage() {
       const response = await fetch('/api/team');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch team members');
+        throw new Error('Nie udało się pobrać członków zespołu');
       }
       
       const data = await response.json();
       setTeamMembers(data);
       setFilteredMembers(data);
     } catch (error) {
-      console.error('Error fetching team members:', error);
-      toast.error('Failed to load team members');
+      console.error('Błąd podczas pobierania członków zespołu:', error);
+      toast.error('Nie udało się załadować członków zespołu');
       
       // Mock data for demonstration
       const mockTeamMembers = [
         {
           id: '1',
-          name: 'John Doe',
-          email: 'john@example.com',
+          name: 'Jan Kowalski',
+          email: 'jan@example.com',
           image: null,
-          role: 'Product Manager',
-          department: 'Product',
+          role: 'Menedżer produktu',
+          department: 'Produkt',
           projects: [
-            { id: 'p1', name: 'Marketing Campaign', color: '#4299E1' },
-            { id: 'p2', name: 'Website Redesign', color: '#48BB78' },
+            { id: 'p1', name: 'Kampania marketingowa', color: '#4299E1' },
+            { id: 'p2', name: 'Przeprojektowanie strony internetowej', color: '#48BB78' },
           ],
           assignedTasks: 12,
           completedTasks: 8,
         },
         {
           id: '2',
-          name: 'Jane Smith',
-          email: 'jane@example.com',
+          name: 'Anna Nowak',
+          email: 'anna@example.com',
           image: null,
-          role: 'UX Designer',
-          department: 'Design',
+          role: 'Projektant UX',
+          department: 'Projekt',
           projects: [
-            { id: 'p2', name: 'Website Redesign', color: '#48BB78' },
-            { id: 'p3', name: 'Mobile App', color: '#ED8936' },
+            { id: 'p2', name: 'Przeprojektowanie strony internetowej', color: '#48BB78' },
+            { id: 'p3', name: 'Aplikacja mobilna', color: '#ED8936' },
           ],
           assignedTasks: 15,
           completedTasks: 10,
         },
         {
           id: '3',
-          name: 'Bob Johnson',
-          email: 'bob@example.com',
+          name: 'Piotr Wiśniewski',
+          email: 'piotr@example.com',
           image: null,
-          role: 'Frontend Developer',
-          department: 'Engineering',
+          role: 'Programista frontend',
+          department: 'Inżynieria',
           projects: [
-            { id: 'p2', name: 'Website Redesign', color: '#48BB78' },
-            { id: 'p4', name: 'API Integration', color: '#9F7AEA' },
+            { id: 'p2', name: 'Przeprojektowanie strony internetowej', color: '#48BB78' },
+            { id: 'p4', name: 'Integracja API', color: '#9F7AEA' },
           ],
           assignedTasks: 18,
           completedTasks: 14,
         },
         {
           id: '4',
-          name: 'Alice Williams',
-          email: 'alice@example.com',
+          name: 'Alicja Wójcik',
+          email: 'alicja@example.com',
           image: null,
-          role: 'Content Strategist',
+          role: 'Strateg treści',
           department: 'Marketing',
           projects: [
-            { id: 'p1', name: 'Marketing Campaign', color: '#4299E1' },
-            { id: 'p5', name: 'Content Calendar', color: '#F56565' },
+            { id: 'p1', name: 'Kampania marketingowa', color: '#4299E1' },
+            { id: 'p5', name: 'Kalendarz treści', color: '#F56565' },
           ],
           assignedTasks: 10,
           completedTasks: 7,
         },
         {
           id: '5',
-          name: 'Charlie Brown',
-          email: 'charlie@example.com',
+          name: 'Karol Lewandowski',
+          email: 'karol@example.com',
           image: null,
-          role: 'Backend Developer',
-          department: 'Engineering',
+          role: 'Programista backend',
+          department: 'Inżynieria',
           projects: [
-            { id: 'p4', name: 'API Integration', color: '#9F7AEA' },
-            { id: 'p6', name: 'Database Migration', color: '#667EEA' },
+            { id: 'p4', name: 'Integracja API', color: '#9F7AEA' },
+            { id: 'p6', name: 'Migracja bazy danych', color: '#667EEA' },
           ],
           assignedTasks: 14,
           completedTasks: 9,
@@ -196,7 +196,7 @@ export default function TeamPage() {
 
   const handleInviteTeamMember = async () => {
     if (!inviteEmail || !inviteEmail.includes('@')) {
-      toast.error('Please enter a valid email address');
+      toast.error('Wprowadź prawidłowy adres e-mail');
       return;
     }
     
@@ -207,12 +207,12 @@ export default function TeamPage() {
       // For now, we'll simulate it
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success(`Invitation sent to ${inviteEmail}`);
+      toast.success(`Zaproszenie wysłane do ${inviteEmail}`);
       setInviteDialogOpen(false);
       setInviteEmail('');
     } catch (error) {
-      console.error('Error inviting team member:', error);
-      toast.error('Failed to send invitation');
+      console.error('Błąd podczas zapraszania członka zespołu:', error);
+      toast.error('Nie udało się wysłać zaproszenia');
     } finally {
       setIsInviting(false);
     }
@@ -250,10 +250,10 @@ export default function TeamPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Team</h1>
+          <h1 className="text-3xl font-bold">Zespół</h1>
           <Button onClick={() => setInviteDialogOpen(true)}>
             <UserPlus className="h-4 w-4 mr-2" />
-            Invite Team Member
+            Zaproś członka zespołu
           </Button>
         </div>
 
@@ -261,7 +261,7 @@ export default function TeamPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search team members..."
+              placeholder="Szukaj członków zespołu..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -271,10 +271,10 @@ export default function TeamPage() {
             <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
               <SelectTrigger className="w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <span>Department</span>
+                <span>Dział</span>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Departments</SelectItem>
+                <SelectItem value="all">Wszystkie działy</SelectItem>
                 {getDepartments().map((department) => (
                   <SelectItem key={department} value={department}>
                     {department}
@@ -289,11 +289,11 @@ export default function TeamPage() {
           <TabsList>
             <TabsTrigger value="grid">
               <Users className="h-4 w-4 mr-2" />
-              Grid View
+              Widok siatki
             </TabsTrigger>
             <TabsTrigger value="list">
               <BarChart2 className="h-4 w-4 mr-2" />
-              List View
+              Widok listy
             </TabsTrigger>
           </TabsList>
           
@@ -325,15 +325,15 @@ export default function TeamPage() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No team members found</h3>
+                  <h3 className="text-lg font-medium mb-2">Nie znaleziono członków zespołu</h3>
                   <p className="text-muted-foreground text-center max-w-sm mb-4">
                     {searchQuery || departmentFilter !== 'all'
-                      ? 'Try adjusting your filters to see more team members'
-                      : 'Invite team members to collaborate on projects'}
+                      ? 'Spróbuj dostosować filtry, aby zobaczyć więcej członków zespołu'
+                      : 'Zaproś członków zespołu do współpracy przy projektach'}
                   </p>
                   <Button onClick={() => setInviteDialogOpen(true)}>
                     <UserPlus className="h-4 w-4 mr-2" />
-                    Invite Team Member
+                    Zaproś członka zespołu
                   </Button>
                 </CardContent>
               </Card>
@@ -349,7 +349,7 @@ export default function TeamPage() {
                         </Avatar>
                         <div>
                           <CardTitle className="text-base">{member.name}</CardTitle>
-                          <div className="text-sm text-muted-foreground">{member.role || 'Team Member'}</div>
+                          <div className="text-sm text-muted-foreground">{member.role || 'Członek zespołu'}</div>
                         </div>
                       </div>
                     </CardHeader>
@@ -367,7 +367,7 @@ export default function TeamPage() {
                         )}
                         
                         <div className="space-y-2">
-                          <div className="text-sm font-medium">Projects</div>
+                          <div className="text-sm font-medium">Projekty</div>
                           <div className="flex flex-wrap gap-2">
                             {member.projects.map((project) => (
                               <div 
@@ -387,8 +387,8 @@ export default function TeamPage() {
                         
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
-                            <span>Task Completion</span>
-                            <span>{member.completedTasks}/{member.assignedTasks} tasks</span>
+                            <span>Ukończenie zadań</span>
+                            <span>{member.completedTasks}/{member.assignedTasks} zadań</span>
                           </div>
                           <div className="h-2 rounded-full bg-muted overflow-hidden">
                             <div 
@@ -413,7 +413,7 @@ export default function TeamPage() {
           <TabsContent value="list" className="mt-6">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Team Members ({filteredMembers.length})</CardTitle>
+                <CardTitle>Członkowie zespołu ({filteredMembers.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -434,15 +434,15 @@ export default function TeamPage() {
                 ) : filteredMembers.length === 0 ? (
                   <div className="text-center py-12">
                     <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No team members found</h3>
+                    <h3 className="text-lg font-medium mb-2">Nie znaleziono członków zespołu</h3>
                     <p className="text-muted-foreground mb-4">
                       {searchQuery || departmentFilter !== 'all'
-                        ? 'Try adjusting your filters to see more team members'
-                        : 'Invite team members to collaborate on projects'}
+                        ? 'Spróbuj dostosować filtry, aby zobaczyć więcej członków zespołu'
+                        : 'Zaproś członków zespołu do współpracy przy projektach'}
                     </p>
                     <Button onClick={() => setInviteDialogOpen(true)}>
                       <UserPlus className="h-4 w-4 mr-2" />
-                      Invite Team Member
+                      Zaproś członka zespołu
                     </Button>
                   </div>
                 ) : (
@@ -450,11 +450,11 @@ export default function TeamPage() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left py-3 px-4 font-medium">Name</th>
-                          <th className="text-left py-3 px-4 font-medium">Role</th>
-                          <th className="text-left py-3 px-4 font-medium">Department</th>
-                          <th className="text-left py-3 px-4 font-medium">Projects</th>
-                          <th className="text-left py-3 px-4 font-medium">Tasks</th>
+                          <th className="text-left py-3 px-4 font-medium">Imię i nazwisko</th>
+                          <th className="text-left py-3 px-4 font-medium">Rola</th>
+                          <th className="text-left py-3 px-4 font-medium">Dział</th>
+                          <th className="text-left py-3 px-4 font-medium">Projekty</th>
+                          <th className="text-left py-3 px-4 font-medium">Zadania</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -472,7 +472,7 @@ export default function TeamPage() {
                                 </div>
                               </div>
                             </td>
-                            <td className="py-3 px-4">{member.role || 'Team Member'}</td>
+                            <td className="py-3 px-4">{member.role || 'Członek zespołu'}</td>
                             <td className="py-3 px-4">
                               {member.department && (
                                 <Badge variant="outline">{member.department}</Badge>
@@ -494,7 +494,7 @@ export default function TeamPage() {
                                 ))}
                                 {member.projects.length > 2 && (
                                   <div className="text-xs text-muted-foreground px-2 py-1">
-                                    +{member.projects.length - 2} more
+                                    +{member.projects.length - 2} więcej
                                   </div>
                                 )}
                               </div>
@@ -532,17 +532,17 @@ export default function TeamPage() {
       <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Invite Team Member</DialogTitle>
+            <DialogTitle>Zaproś członka zespołu</DialogTitle>
             <DialogDescription>
-              Send an invitation to collaborate on your projects.
+              Wyślij zaproszenie do współpracy przy projektach.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Email Address</label>
+              <label className="text-sm font-medium">Adres e-mail</label>
               <Input 
                 type="email" 
-                placeholder="colleague@example.com"
+                placeholder="kolega@example.com"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
               />
@@ -553,13 +553,13 @@ export default function TeamPage() {
               variant="outline" 
               onClick={() => setInviteDialogOpen(false)}
             >
-              Cancel
+              Anuluj
             </Button>
             <Button 
               onClick={handleInviteTeamMember}
               disabled={isInviting}
             >
-              {isInviting ? 'Sending...' : 'Send Invitation'}
+              {isInviting ? 'Wysyłanie...' : 'Wyślij zaproszenie'}
             </Button>
           </DialogFooter>
         </DialogContent>

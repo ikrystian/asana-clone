@@ -13,6 +13,7 @@ import {
   addMonths,
   subMonths
 } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -135,7 +136,7 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">{format(currentMonth, 'MMMM yyyy')}</h2>
+        <h2 className="text-xl font-bold">{format(currentMonth, 'MMMM yyyy', { locale: pl })}</h2>
         <div className="flex space-x-2">
           <Button variant="outline" size="icon" onClick={prevMonth}>
             <ChevronLeft className="h-4 w-4" />
@@ -151,7 +152,7 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
           <div className="min-w-[1200px]">
             {/* Timeline header */}
             <div className="flex border-b">
-              <div className="w-48 min-w-48 p-2 border-r bg-muted/50 font-medium">Task</div>
+              <div className="w-48 min-w-48 p-2 border-r bg-muted/50 font-medium">Zadanie</div>
               <div className="flex-1 flex">
                 {days.map((day) => (
                   <div
@@ -171,7 +172,7 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
             {/* Month indicators */}
             <div className="flex border-b">
               <div className="w-48 min-w-48 p-2 border-r bg-muted/50 font-medium">
-                Assignee
+                Przypisany
               </div>
               <div className="flex-1 flex">
                 {days.map((day, index) => {
@@ -191,7 +192,7 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
                     >
                       {(isFirstOfMonth || isFirstDay) && (
                         <span className="text-[8px] text-muted-foreground">
-                          {format(day, 'MMM')}
+                          {format(day, 'MMM', { locale: pl })}
                         </span>
                       )}
                     </div>
@@ -203,7 +204,7 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
             {/* Tasks */}
             {timelineTasks.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                No tasks with due dates to display
+                Brak zadań z terminami do wyświetlenia
               </div>
             ) : (
               timelineTasks.map((task) => {
@@ -219,12 +220,12 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
                         <div className="font-medium text-sm truncate">{task.title}</div>
                         <div className="text-xs text-muted-foreground">
                           {task.status === 'TODO'
-                            ? 'To Do'
+                            ? 'Do zrobienia'
                             : task.status === 'IN_PROGRESS'
-                            ? 'In Progress'
+                            ? 'W toku'
                             : task.status === 'REVIEW'
-                            ? 'Review'
-                            : 'Done'}
+                            ? 'Recenzja'
+                            : 'Zakończone'}
                         </div>
                       </div>
                       {task.assignee && (

@@ -15,9 +15,9 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Checkbox } from '@/components/ui/checkbox';
 
 const projectSchema = z.object({
-  name: z.string().min(2, 'Project name must be at least 2 characters'),
+  name: z.string().min(2, 'Nazwa projektu musi mieć co najmniej 2 znaki'),
   description: z.string().optional(),
-  color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid color format'),
+  color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Nieprawidłowy format koloru'),
   isPublic: z.boolean().default(false),
 });
 
@@ -64,14 +64,14 @@ export default function NewProjectPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        toast.error(result.error || 'Failed to create project');
+        toast.error(result.error || 'Nie udało się utworzyć projektu');
         return;
       }
 
-      toast.success('Project created successfully!');
+      toast.success('Projekt został pomyślnie utworzony!');
       router.push(`/projects/${result.id}`);
     } catch (error) {
-      toast.error('Something went wrong. Please try again.');
+      toast.error('Coś poszło nie tak. Proszę spróbować ponownie.');
     } finally {
       setIsLoading(false);
     }
@@ -80,13 +80,13 @@ export default function NewProjectPage() {
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Create New Project</h1>
+        <h1 className="text-3xl font-bold mb-6">Utwórz nowy projekt</h1>
         
         <Card>
           <CardHeader>
-            <CardTitle>Project Details</CardTitle>
+            <CardTitle>Szczegóły projektu</CardTitle>
             <CardDescription>
-              Fill in the details to create a new project
+              Wypełnij szczegóły, aby utworzyć nowy projekt
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -97,12 +97,12 @@ export default function NewProjectPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Project Name</FormLabel>
+                      <FormLabel>Nazwa projektu</FormLabel>
                       <FormControl>
-                        <Input placeholder="Marketing Campaign" {...field} />
+                        <Input placeholder="Kampania marketingowa" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Give your project a clear and descriptive name
+                        Nadaj swojemu projektowi jasną i opisową nazwę
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -114,16 +114,16 @@ export default function NewProjectPage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel>Opis</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Describe the purpose and goals of this project..." 
+                          placeholder="Opisz cel i założenia tego projektu..." 
                           className="min-h-[100px]"
                           {...field} 
                         />
                       </FormControl>
                       <FormDescription>
-                        Optional: Add details about the project's purpose and goals
+                        Opcjonalnie: dodaj szczegóły dotyczące celu i założeń projektu
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -135,7 +135,7 @@ export default function NewProjectPage() {
                   name="color"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Project Color</FormLabel>
+                      <FormLabel>Kolor projektu</FormLabel>
                       <div className="flex flex-wrap gap-2 mb-2">
                         {defaultColors.map((color) => (
                           <div
@@ -152,7 +152,7 @@ export default function NewProjectPage() {
                         <Input type="color" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Choose a color to identify your project
+                        Wybierz kolor do identyfikacji swojego projektu
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -171,9 +171,9 @@ export default function NewProjectPage() {
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel>Public Project</FormLabel>
+                        <FormLabel>Projekt publiczny</FormLabel>
                         <FormDescription>
-                          Make this project visible to anyone with the link
+                          Udostępnij ten projekt każdemu, kto ma link
                         </FormDescription>
                       </div>
                     </FormItem>
@@ -187,10 +187,10 @@ export default function NewProjectPage() {
                     onClick={() => router.back()}
                     disabled={isLoading}
                   >
-                    Cancel
+                    Anuluj
                   </Button>
                   <Button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Creating...' : 'Create Project'}
+                    {isLoading ? 'Tworzenie...' : 'Utwórz projekt'}
                   </Button>
                 </div>
               </form>

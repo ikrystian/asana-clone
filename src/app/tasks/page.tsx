@@ -88,33 +88,33 @@ export default function TasksPage() {
       const response = await fetch('/api/tasks/my-tasks');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch tasks');
+        throw new Error('Nie udało się pobrać zadań');
       }
       
       const data = await response.json();
       setTasks(data);
     } catch (error) {
-      console.error('Error fetching tasks:', error);
-      toast.error('Failed to load tasks');
+      console.error('Błąd podczas pobierania zadań:', error);
+      toast.error('Nie udało się załadować zadań');
       
       // Mock data for demonstration
       const mockTasks = Array.from({ length: 15 }, (_, i) => ({
         id: `task-${i + 1}`,
-        title: `Task ${i + 1}`,
-        description: i % 3 === 0 ? `Description for task ${i + 1}` : null,
+        title: `Zadanie ${i + 1}`,
+        description: i % 3 === 0 ? `Opis zadania ${i + 1}` : null,
         status: ['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'][Math.floor(Math.random() * 4)],
         priority: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'][Math.floor(Math.random() * 4)],
         dueDate: i % 2 === 0 ? new Date(Date.now() + (Math.random() * 14 - 7) * 86400000).toISOString() : null,
         completedAt: i % 4 === 0 ? new Date().toISOString() : null,
         project: {
           id: `project-${Math.floor(Math.random() * 3) + 1}`,
-          name: ['Marketing', 'Development', 'Design'][Math.floor(Math.random() * 3)],
+          name: ['Marketing', 'Rozwój', 'Projekt'][Math.floor(Math.random() * 3)],
           color: ['#4299E1', '#48BB78', '#ED8936'][Math.floor(Math.random() * 3)],
         },
         assignee: {
           id: 'user-1',
-          name: 'John Doe',
-          email: 'john@example.com',
+          name: 'Jan Kowalski',
+          email: 'jan@example.com',
           image: null,
         },
       }));
@@ -130,19 +130,19 @@ export default function TasksPage() {
       const response = await fetch('/api/projects');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch projects');
+        throw new Error('Nie udało się pobrać projektów');
       }
       
       const data = await response.json();
       setProjects(data);
     } catch (error) {
-      console.error('Error fetching projects:', error);
+      console.error('Błąd podczas pobierania projektów:', error);
       
       // Mock data for demonstration
       const mockProjects = [
         { id: 'project-1', name: 'Marketing', color: '#4299E1' },
-        { id: 'project-2', name: 'Development', color: '#48BB78' },
-        { id: 'project-3', name: 'Design', color: '#ED8936' },
+        { id: 'project-2', name: 'Rozwój', color: '#48BB78' },
+        { id: 'project-3', name: 'Projekt', color: '#ED8936' },
       ];
       
       setProjects(mockProjects);
@@ -207,13 +207,13 @@ export default function TasksPage() {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to update task status');
+        throw new Error('Nie udało się zaktualizować statusu zadania');
       }
       
-      toast.success(`Task marked as ${newStatus.toLowerCase().replace('_', ' ')}`);
+      toast.success(`Zadanie oznaczone jako ${newStatus.toLowerCase().replace('_', ' ')}`);
     } catch (error) {
-      console.error('Error updating task status:', error);
-      toast.error('Failed to update task status');
+      console.error('Błąd podczas aktualizacji statusu zadania:', error);
+      toast.error('Nie udało się zaktualizować statusu zadania');
       
       // Revert the optimistic update
       fetchTasks();
@@ -261,30 +261,30 @@ export default function TasksPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'TODO':
-        return <Badge variant="outline" className="bg-gray-100">To Do</Badge>;
+        return <Badge variant="outline" className="bg-gray-100">Do zrobienia</Badge>;
       case 'IN_PROGRESS':
-        return <Badge variant="outline" className="bg-blue-100">In Progress</Badge>;
+        return <Badge variant="outline" className="bg-blue-100">W toku</Badge>;
       case 'REVIEW':
-        return <Badge variant="outline" className="bg-yellow-100">Review</Badge>;
+        return <Badge variant="outline" className="bg-yellow-100">Recenzja</Badge>;
       case 'DONE':
-        return <Badge variant="outline" className="bg-green-100">Done</Badge>;
+        return <Badge variant="outline" className="bg-green-100">Zakończone</Badge>;
       default:
-        return <Badge variant="outline">Unknown</Badge>;
+        return <Badge variant="outline">Nieznany</Badge>;
     }
   };
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'LOW':
-        return <Badge variant="outline" className="bg-blue-100">Low</Badge>;
+        return <Badge variant="outline" className="bg-blue-100">Niski</Badge>;
       case 'MEDIUM':
-        return <Badge variant="outline" className="bg-green-100">Medium</Badge>;
+        return <Badge variant="outline" className="bg-green-100">Średni</Badge>;
       case 'HIGH':
-        return <Badge variant="outline" className="bg-orange-100">High</Badge>;
+        return <Badge variant="outline" className="bg-orange-100">Wysoki</Badge>;
       case 'URGENT':
-        return <Badge variant="outline" className="bg-red-100">Urgent</Badge>;
+        return <Badge variant="outline" className="bg-red-100">Pilny</Badge>;
       default:
-        return <Badge variant="outline">Unknown</Badge>;
+        return <Badge variant="outline">Nieznany</Badge>;
     }
   };
 
@@ -312,10 +312,10 @@ export default function TasksPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">My Tasks</h1>
+          <h1 className="text-3xl font-bold">Moje zadania</h1>
           <Button onClick={() => router.push('/dashboard')}>
             <Plus className="h-4 w-4 mr-2" />
-            New Task
+            Nowe zadanie
           </Button>
         </div>
 
@@ -323,7 +323,7 @@ export default function TasksPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search tasks..."
+              placeholder="Szukaj zadań..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -336,33 +336,33 @@ export default function TasksPage() {
                 <span>Status</span>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="TODO">To Do</SelectItem>
-                <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                <SelectItem value="REVIEW">Review</SelectItem>
-                <SelectItem value="DONE">Done</SelectItem>
+                <SelectItem value="all">Wszystkie statusy</SelectItem>
+                <SelectItem value="TODO">Do zrobienia</SelectItem>
+                <SelectItem value="IN_PROGRESS">W toku</SelectItem>
+                <SelectItem value="REVIEW">Recenzja</SelectItem>
+                <SelectItem value="DONE">Zakończone</SelectItem>
               </SelectContent>
             </Select>
             <Select value={priorityFilter} onValueChange={setPriorityFilter}>
               <SelectTrigger className="w-[130px]">
                 <AlertTriangle className="h-4 w-4 mr-2" />
-                <span>Priority</span>
+                <span>Priorytet</span>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Priorities</SelectItem>
-                <SelectItem value="LOW">Low</SelectItem>
-                <SelectItem value="MEDIUM">Medium</SelectItem>
-                <SelectItem value="HIGH">High</SelectItem>
-                <SelectItem value="URGENT">Urgent</SelectItem>
+                <SelectItem value="all">Wszystkie priorytety</SelectItem>
+                <SelectItem value="LOW">Niski</SelectItem>
+                <SelectItem value="MEDIUM">Średni</SelectItem>
+                <SelectItem value="HIGH">Wysoki</SelectItem>
+                <SelectItem value="URGENT">Pilny</SelectItem>
               </SelectContent>
             </Select>
             <Select value={projectFilter} onValueChange={setProjectFilter}>
               <SelectTrigger className="w-[150px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <span>Project</span>
+                <span>Projekt</span>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
+                <SelectItem value="all">Wszystkie projekty</SelectItem>
                 {projects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.name}
@@ -375,13 +375,13 @@ export default function TasksPage() {
 
         <Tabs defaultValue="list">
           <TabsList>
-            <TabsTrigger value="list">List</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            <TabsTrigger value="list">Lista</TabsTrigger>
+            <TabsTrigger value="calendar">Kalendarz</TabsTrigger>
           </TabsList>
           <TabsContent value="list" className="mt-6">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Tasks ({filteredTasks.length})</CardTitle>
+                <CardTitle>Zadania ({filteredTasks.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -402,15 +402,15 @@ export default function TasksPage() {
                 ) : filteredTasks.length === 0 ? (
                   <div className="text-center py-12">
                     <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No tasks found</h3>
+                    <h3 className="text-lg font-medium mb-2">Nie znaleziono zadań</h3>
                     <p className="text-muted-foreground mb-4">
                       {searchQuery || statusFilter !== 'all' || priorityFilter !== 'all' || projectFilter !== 'all'
-                        ? 'Try adjusting your filters to see more tasks'
-                        : 'You have no tasks assigned to you'}
+                        ? 'Spróbuj dostosować filtry, aby zobaczyć więcej zadań'
+                        : 'Nie masz przypisanych żadnych zadań'}
                     </p>
                     <Button onClick={() => router.push('/dashboard')}>
                       <Plus className="h-4 w-4 mr-2" />
-                      Create a Task
+                      Utwórz zadanie
                     </Button>
                   </div>
                 ) : (
@@ -487,7 +487,7 @@ export default function TasksPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuLabel>Akcje</DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onClick={(e) => {
@@ -495,7 +495,7 @@ export default function TasksPage() {
                                   handleStatusChange(task.id, 'TODO');
                                 }}
                               >
-                                Mark as To Do
+                                Oznacz jako do zrobienia
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={(e) => {
@@ -503,7 +503,7 @@ export default function TasksPage() {
                                   handleStatusChange(task.id, 'IN_PROGRESS');
                                 }}
                               >
-                                Mark as In Progress
+                                Oznacz jako w toku
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={(e) => {
@@ -511,7 +511,7 @@ export default function TasksPage() {
                                   handleStatusChange(task.id, 'REVIEW');
                                 }}
                               >
-                                Mark as Review
+                                Oznacz jako recenzja
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={(e) => {
@@ -519,7 +519,7 @@ export default function TasksPage() {
                                   handleStatusChange(task.id, 'DONE');
                                 }}
                               >
-                                Mark as Done
+                                Oznacz jako zakończone
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -536,9 +536,9 @@ export default function TasksPage() {
               <CardContent className="p-6">
                 <div className="text-center py-12">
                   <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Calendar View</h3>
+                  <h3 className="text-lg font-medium mb-2">Widok kalendarza</h3>
                   <p className="text-muted-foreground mb-4">
-                    Calendar view will be implemented in a future update
+                    Widok kalendarza zostanie zaimplementowany w przyszłej aktualizacji
                   </p>
                 </div>
               </CardContent>

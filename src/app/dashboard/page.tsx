@@ -48,7 +48,7 @@ export default function DashboardPage() {
         // Fetch projects
         const projectsResponse = await fetch('/api/projects');
         if (!projectsResponse.ok) {
-          throw new Error('Failed to fetch projects');
+          throw new Error('Nie udało się pobrać projektów');
         }
         const projectsData = await projectsResponse.json();
         setProjects(projectsData);
@@ -60,8 +60,8 @@ export default function DashboardPage() {
           setRecentTasks(tasksData);
         }
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        toast.error('Failed to load dashboard data');
+        console.error('Błąd podczas pobierania danych pulpitu:', error);
+        toast.error('Nie udało się załadować danych pulpitu');
       } finally {
         setIsLoading(false);
       }
@@ -74,17 +74,17 @@ export default function DashboardPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-3xl font-bold">Pulpit</h1>
           <Button onClick={() => router.push('/projects/new')}>
             <PlusSquare className="mr-2 h-4 w-4" />
-            New Project
+            Nowy projekt
           </Button>
         </div>
 
         <Tabs defaultValue="projects">
           <TabsList>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="tasks">Recent Tasks</TabsTrigger>
+            <TabsTrigger value="projects">Projekty</TabsTrigger>
+            <TabsTrigger value="tasks">Ostatnie zadania</TabsTrigger>
           </TabsList>
           <TabsContent value="projects" className="mt-6">
             {isLoading ? (
@@ -108,15 +108,15 @@ export default function DashboardPage() {
             ) : projects.length === 0 ? (
               <Card>
                 <CardHeader>
-                  <CardTitle>No projects yet</CardTitle>
+                  <CardTitle>Brak projektów</CardTitle>
                   <CardDescription>
-                    Create your first project to get started
+                    Utwórz swój pierwszy projekt, aby rozpocząć
                   </CardDescription>
                 </CardHeader>
                 <CardFooter>
                   <Button onClick={() => router.push('/projects/new')}>
                     <PlusSquare className="mr-2 h-4 w-4" />
-                    Create Project
+                    Utwórz projekt
                   </Button>
                 </CardFooter>
               </Card>
@@ -133,13 +133,13 @@ export default function DashboardPage() {
                         <CardTitle className="text-xl">{project.name}</CardTitle>
                       </div>
                       <CardDescription>
-                        {project.description || 'No description'}
+                        {project.description || 'Brak opisu'}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <CheckSquare className="mr-1 h-4 w-4" />
-                        <span>{project._count.tasks} tasks</span>
+                        <span>{project._count.tasks} zadania</span>
                       </div>
                     </CardContent>
                     <CardFooter>
@@ -149,16 +149,16 @@ export default function DashboardPage() {
                         onClick={() => router.push(`/projects/${project.id}`)}
                       >
                         <Folder className="mr-2 h-4 w-4" />
-                        View Project
+                        Zobacz projekt
                       </Button>
                     </CardFooter>
                   </Card>
                 ))}
                 <Card className="border-dashed">
                   <CardHeader>
-                    <CardTitle>Create a new project</CardTitle>
+                    <CardTitle>Utwórz nowy projekt</CardTitle>
                     <CardDescription>
-                      Start organizing your work in a new project
+                      Zacznij organizować swoją pracę w nowym projekcie
                     </CardDescription>
                   </CardHeader>
                   <CardFooter>
@@ -168,7 +168,7 @@ export default function DashboardPage() {
                       onClick={() => router.push('/projects/new')}
                     >
                       <PlusSquare className="mr-2 h-4 w-4" />
-                      New Project
+                      Nowy projekt
                     </Button>
                   </CardFooter>
                 </Card>
@@ -192,15 +192,15 @@ export default function DashboardPage() {
             ) : recentTasks.length === 0 ? (
               <Card>
                 <CardHeader>
-                  <CardTitle>No recent tasks</CardTitle>
+                  <CardTitle>Brak ostatnich zadań</CardTitle>
                   <CardDescription>
-                    Your recently updated tasks will appear here
+                    Twoje ostatnio zaktualizowane zadania pojawią się tutaj
                   </CardDescription>
                 </CardHeader>
                 <CardFooter>
                   <Button onClick={() => router.push('/tasks')}>
                     <CheckSquare className="mr-2 h-4 w-4" />
-                    View All Tasks
+                    Zobacz wszystkie zadania
                   </Button>
                 </CardFooter>
               </Card>
@@ -249,12 +249,12 @@ export default function DashboardPage() {
                             }}
                           >
                             {task.status === 'TODO'
-                              ? 'To Do'
+                              ? 'Do zrobienia'
                               : task.status === 'IN_PROGRESS'
-                              ? 'In Progress'
+                              ? 'W toku'
                               : task.status === 'REVIEW'
-                              ? 'Review'
-                              : 'Done'}
+                              ? 'Recenzja'
+                              : 'Zakończone'}
                           </div>
                         </div>
                       </div>
@@ -264,7 +264,7 @@ export default function DashboardPage() {
                 <div className="flex justify-center mt-4">
                   <Button variant="outline" onClick={() => router.push('/tasks')}>
                     <CheckSquare className="mr-2 h-4 w-4" />
-                    View All Tasks
+                    Zobacz wszystkie zadania
                   </Button>
                 </div>
               </div>
@@ -275,8 +275,8 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Upcoming Deadlines</CardTitle>
-              <CardDescription>Tasks due in the next 7 days</CardDescription>
+              <CardTitle>Nadchodzące terminy</CardTitle>
+              <CardDescription>Zadania do wykonania w ciągu najbliższych 7 dni</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -291,9 +291,9 @@ export default function DashboardPage() {
               ) : (
                 <div className="text-center py-6 text-muted-foreground">
                   <Calendar className="mx-auto h-12 w-12 mb-2 opacity-50" />
-                  <p>No upcoming deadlines</p>
+                  <p>Brak nadchodzących terminów</p>
                   <p className="text-sm">
-                    Tasks with due dates will appear here
+                    Zadania z terminami pojawią się tutaj
                   </p>
                 </div>
               )}
@@ -301,14 +301,14 @@ export default function DashboardPage() {
             <CardFooter>
               <Button variant="outline" className="w-full" onClick={() => router.push('/calendar')}>
                 <Calendar className="mr-2 h-4 w-4" />
-                View Calendar
+                Zobacz kalendarz
               </Button>
             </CardFooter>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Activity</CardTitle>
-              <CardDescription>Recent activity in your workspace</CardDescription>
+              <CardTitle>Aktywność</CardTitle>
+              <CardDescription>Ostatnia aktywność w Twoim obszarze roboczym</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -326,9 +326,9 @@ export default function DashboardPage() {
               ) : (
                 <div className="text-center py-6 text-muted-foreground">
                   <Clock className="mx-auto h-12 w-12 mb-2 opacity-50" />
-                  <p>No recent activity</p>
+                  <p>Brak ostatniej aktywności</p>
                   <p className="text-sm">
-                    Activity from you and your team will appear here
+                    Aktywność Twoja i Twojego zespołu pojawi się tutaj
                   </p>
                 </div>
               )}

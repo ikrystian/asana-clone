@@ -17,6 +17,7 @@ import {
   isToday,
   parseISO
 } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -109,20 +110,20 @@ export default function CalendarPage() {
       const response = await fetch('/api/tasks/calendar');
 
       if (!response.ok) {
-        throw new Error('Failed to fetch tasks');
+        throw new Error('Nie udało się pobrać zadań');
       }
 
       const data = await response.json();
       setTasks(data);
       setFilteredTasks(data);
     } catch (error) {
-      console.error('Error fetching tasks:', error);
-      toast.error('Failed to load tasks');
+      console.error('Błąd podczas pobierania zadań:', error);
+      toast.error('Nie udało się załadować zadań');
 
       // Mock data for demonstration
       const mockTasks = Array.from({ length: 20 }, (_, i) => ({
         id: `task-${i + 1}`,
-        title: `Task ${i + 1}`,
+        title: `Zadanie ${i + 1}`,
         status: ['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'][Math.floor(Math.random() * 4)],
         priority: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'][Math.floor(Math.random() * 4)],
         dueDate: new Date(
@@ -132,13 +133,13 @@ export default function CalendarPage() {
         ).toISOString(),
         project: {
           id: `project-${Math.floor(Math.random() * 3) + 1}`,
-          name: ['Marketing', 'Development', 'Design'][Math.floor(Math.random() * 3)],
+          name: ['Marketing', 'Rozwój', 'Projekt'][Math.floor(Math.random() * 3)],
           color: ['#4299E1', '#48BB78', '#ED8936'][Math.floor(Math.random() * 3)],
         },
         assignee: {
           id: 'user-1',
-          name: 'John Doe',
-          email: 'john@example.com',
+          name: 'Jan Kowalski',
+          email: 'jan@example.com',
           image: null,
         },
       }));
@@ -155,19 +156,19 @@ export default function CalendarPage() {
       const response = await fetch('/api/projects');
 
       if (!response.ok) {
-        throw new Error('Failed to fetch projects');
+        throw new Error('Nie udało się pobrać projektów');
       }
 
       const data = await response.json();
       setProjects(data);
     } catch (error) {
-      console.error('Error fetching projects:', error);
+      console.error('Błąd podczas pobierania projektów:', error);
 
       // Mock data for demonstration
       const mockProjects = [
         { id: 'project-1', name: 'Marketing', color: '#4299E1' },
-        { id: 'project-2', name: 'Development', color: '#48BB78' },
-        { id: 'project-3', name: 'Design', color: '#ED8936' },
+        { id: 'project-2', name: 'Rozwój', color: '#48BB78' },
+        { id: 'project-3', name: 'Projekt', color: '#ED8936' },
       ];
 
       setProjects(mockProjects);
@@ -223,10 +224,10 @@ export default function CalendarPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Calendar</h1>
+          <h1 className="text-3xl font-bold">Kalendarz</h1>
           <Button onClick={() => router.push('/dashboard')}>
             <Plus className="h-4 w-4 mr-2" />
-            New Task
+            Nowe zadanie
           </Button>
         </div>
 
@@ -236,7 +237,7 @@ export default function CalendarPage() {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <h2 className="text-xl font-semibold">
-              {format(currentMonth, 'MMMM yyyy')}
+              {format(currentMonth, 'MMMM yyyy', { locale: pl })}
             </h2>
             <Button variant="outline" size="icon" onClick={nextMonth}>
               <ChevronRight className="h-4 w-4" />
@@ -246,26 +247,26 @@ export default function CalendarPage() {
               size="sm"
               onClick={() => setCurrentMonth(new Date())}
             >
-              Today
+              Dzisiaj
             </Button>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">Filter by:</span>
+            <span className="text-sm font-medium">Filtruj wg:</span>
             <Select value={projectFilter} onValueChange={setProjectFilter}>
               <SelectTrigger className="w-[180px]">
                 <div className="flex items-center">
                   <Filter className="h-4 w-4 mr-2" />
                   {projectFilter === 'all' ? (
-                    <span>All Projects</span>
+                    <span>Wszystkie projekty</span>
                   ) : (
                     <span>
-                      {projects.find(p => p.id === projectFilter)?.name || 'Project'}
+                      {projects.find(p => p.id === projectFilter)?.name || 'Projekt'}
                     </span>
                   )}
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
+                <SelectItem value="all">Wszystkie projekty</SelectItem>
                 {projects.map((project) => (
                   <SelectItem key={project.id} value={project.id}>
                     <div className="flex items-center">
@@ -286,7 +287,7 @@ export default function CalendarPage() {
                 onClick={() => setProjectFilter('all')}
                 className="text-xs"
               >
-                Clear filter
+                Wyczyść filtr
               </Button>
             )}
           </div>
@@ -308,7 +309,7 @@ export default function CalendarPage() {
             ) : (
               <>
                 <div className="grid grid-cols-7 gap-4">
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  {['Niedz', 'Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob'].map((day) => (
                     <div key={day} className="text-center font-medium text-sm py-2">
                       {day}
                     </div>

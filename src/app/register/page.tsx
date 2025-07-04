@@ -14,12 +14,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  name: z.string().min(2, 'Imię musi mieć co najmniej 2 znaki'),
+  email: z.string().email('Nieprawidłowy adres e-mail'),
+  password: z.string().min(8, 'Hasło musi mieć co najmniej 8 znaków'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: "Hasła nie pasują do siebie",
   path: ['confirmPassword'],
 });
 
@@ -58,7 +58,7 @@ export default function RegisterPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        toast.error(result.error || 'Registration failed');
+        toast.error(result.error || 'Rejestracja nie powiodła się');
         return;
       }
 
@@ -69,11 +69,11 @@ export default function RegisterPage() {
         redirect: false,
       });
 
-      toast.success('Account created successfully!');
+      toast.success('Konto zostało pomyślnie utworzone!');
       router.push('/dashboard');
       router.refresh();
     } catch (error) {
-      toast.error('Something went wrong. Please try again.');
+      toast.error('Coś poszło nie tak. Proszę spróbować ponownie.');
     } finally {
       setIsLoading(false);
     }
@@ -88,9 +88,9 @@ export default function RegisterPage() {
               <span className="text-primary-foreground font-bold">A</span>
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Utwórz konto</CardTitle>
           <CardDescription className="text-center">
-            Enter your information to create an account
+            Wprowadź swoje dane, aby utworzyć konto
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,9 +101,9 @@ export default function RegisterPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>Imię</FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} />
+                      <Input placeholder="Jan Kowalski" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -114,7 +114,7 @@ export default function RegisterPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>E-mail</FormLabel>
                     <FormControl>
                       <Input placeholder="email@example.com" {...field} />
                     </FormControl>
@@ -127,7 +127,7 @@ export default function RegisterPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Hasło</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
@@ -140,7 +140,7 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>Potwierdź hasło</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
@@ -149,16 +149,16 @@ export default function RegisterPage() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Creating account...' : 'Create account'}
+                {isLoading ? 'Tworzenie konta...' : 'Utwórz konto'}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-center text-sm">
-            Already have an account?{' '}
+            Masz już konto?{' '}
             <Link href="/login" className="text-primary hover:underline">
-              Sign in
+              Zaloguj się
             </Link>
           </div>
         </CardFooter>

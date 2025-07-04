@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -93,7 +94,7 @@ export function CalendarView({ tasks, onTaskClick, onCreateTask }: CalendarViewP
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">{format(currentMonth, 'MMMM yyyy')}</h2>
+        <h2 className="text-xl font-bold">{format(currentMonth, 'MMMM yyyy', { locale: pl })}</h2>
         <div className="flex space-x-2">
           <Button variant="outline" size="icon" onClick={prevMonth}>
             <ChevronLeft className="h-4 w-4" />
@@ -105,7 +106,7 @@ export function CalendarView({ tasks, onTaskClick, onCreateTask }: CalendarViewP
       </div>
 
       <div className="grid grid-cols-7 gap-4">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+        {['Niedz', 'Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob'].map((day) => (
           <div key={day} className="text-center font-medium text-sm py-2">
             {day}
           </div>
@@ -171,12 +172,12 @@ export function CalendarView({ tasks, onTaskClick, onCreateTask }: CalendarViewP
                       >
                         <div className={`w-1 h-1 rounded-full ${getStatusColor(task.status)} mr-1`} />
                         {task.status === 'TODO'
-                          ? 'To Do'
+                          ? 'Do zrobienia'
                           : task.status === 'IN_PROGRESS'
-                          ? 'In Progress'
+                          ? 'W toku'
                           : task.status === 'REVIEW'
-                          ? 'Review'
-                          : 'Done'}
+                          ? 'Recenzja'
+                          : 'Zakończone'}
                       </Badge>
                     </div>
                   </div>

@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,7 +41,7 @@ import { ChevronLeft, CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const taskSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z.string().min(1, 'Tytuł jest wymagany'),
   description: z.string().optional(),
   status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE']),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
@@ -86,7 +87,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
         // Fetch task details
         const taskResponse = await fetch(`/api/tasks/${taskId}`);
         if (!taskResponse.ok) {
-          throw new Error('Failed to fetch task');
+          throw new Error('Nie udało się pobrać zadania');
         }
         const taskData = await taskResponse.json();
         
@@ -131,8 +132,8 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
           setUsers(usersData);
         }
       } catch (error) {
-        console.error('Error fetching task data:', error);
-        toast.error('Failed to load task data');
+        console.error('Błąd podczas pobierania danych zadania:', error);
+        toast.error('Nie udało się załadować danych zadania');
       } finally {
         setIsLoadingData(false);
       }
@@ -159,14 +160,14 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
       const result = await response.json();
 
       if (!response.ok) {
-        toast.error(result.error || 'Failed to update task');
+        toast.error(result.error || 'Nie udało się zaktualizować zadania');
         return;
       }
 
-      toast.success('Task updated successfully!');
+      toast.success('Zadanie zostało pomyślnie zaktualizowane!');
       router.push(`/tasks/${taskId}`);
     } catch (error) {
-      toast.error('Something went wrong. Please try again.');
+      toast.error('Coś poszło nie tak. Proszę spróbować ponownie.');
     } finally {
       setIsLoading(false);
     }
@@ -186,9 +187,9 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
         <div className="flex items-center mb-6">
           <Button variant="ghost" onClick={() => router.back()}>
             <ChevronLeft className="mr-2 h-4 w-4" />
-            Back
+            Wróć
           </Button>
-          <h1 className="text-2xl font-bold ml-4">Edit Task</h1>
+          <h1 className="text-2xl font-bold ml-4">Edytuj zadanie</h1>
         </div>
 
         {isLoadingData ? (
@@ -206,7 +207,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>Task Details</CardTitle>
+              <CardTitle>Szczegóły zadania</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -216,9 +217,9 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Title</FormLabel>
+                        <FormLabel>Tytuł</FormLabel>
                         <FormControl>
-                          <Input placeholder="Task title" {...field} />
+                          <Input placeholder="Tytuł zadania" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -230,10 +231,10 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Description</FormLabel>
+                        <FormLabel>Opis</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Task description"
+                            placeholder="Opis zadania"
                             className="min-h-32"
                             {...field}
                           />
@@ -256,14 +257,14 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
+                                <SelectValue placeholder="Wybierz status" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="TODO">To Do</SelectItem>
-                              <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                              <SelectItem value="REVIEW">Review</SelectItem>
-                              <SelectItem value="DONE">Done</SelectItem>
+                              <SelectItem value="TODO">Do zrobienia</SelectItem>
+                              <SelectItem value="IN_PROGRESS">W toku</SelectItem>
+                              <SelectItem value="REVIEW">Recenzja</SelectItem>
+                              <SelectItem value="DONE">Zakończone</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -276,21 +277,21 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                       name="priority"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Priority</FormLabel>
+                          <FormLabel>Priorytet</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select priority" />
+                                <SelectValue placeholder="Wybierz priorytet" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="LOW">Low</SelectItem>
-                              <SelectItem value="MEDIUM">Medium</SelectItem>
-                              <SelectItem value="HIGH">High</SelectItem>
-                              <SelectItem value="URGENT">Urgent</SelectItem>
+                              <SelectItem value="LOW">Niski</SelectItem>
+                              <SelectItem value="MEDIUM">Średni</SelectItem>
+                              <SelectItem value="HIGH">Wysoki</SelectItem>
+                              <SelectItem value="URGENT">Pilny</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -303,7 +304,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                       name="dueDate"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Due Date</FormLabel>
+                          <FormLabel>Termin</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
@@ -315,9 +316,9 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                                   )}
                                 >
                                   {field.value ? (
-                                    format(field.value, "PPP")
+                                    format(field.value, "PPP", { locale: pl })
                                   ) : (
-                                    <span>No due date</span>
+                                    <span>Brak terminu</span>
                                   )}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
@@ -337,7 +338,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                                   className="w-full"
                                   onClick={() => field.onChange(null)}
                                 >
-                                  Clear date
+                                  Wyczyść datę
                                 </Button>
                               </div>
                             </PopoverContent>
@@ -352,18 +353,18 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                       name="assigneeId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Assignee</FormLabel>
+                          <FormLabel>Przypisany</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value || "unassigned"}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select assignee" />
+                                <SelectValue placeholder="Wybierz przypisanego" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="unassigned">Unassigned</SelectItem>
+                              <SelectItem value="unassigned">Nieprzypisany</SelectItem>
                               {users.map((user) => (
                                 <SelectItem key={user.id} value={user.id}>
                                   <div className="flex items-center">
@@ -388,18 +389,18 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                         name="sectionId"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Section</FormLabel>
+                            <FormLabel>Sekcja</FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value || "none"}
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select section" />
+                                  <SelectValue placeholder="Wybierz sekcję" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="none">No section</SelectItem>
+                                <SelectItem value="none">Brak sekcji</SelectItem>
                                 {project.sections.map((section: any) => (
                                   <SelectItem key={section.id} value={section.id}>
                                     {section.name}
@@ -419,18 +420,18 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                         name="parentTaskId"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Parent Task</FormLabel>
+                            <FormLabel>Zadanie nadrzędne</FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value || "none"}
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select parent task" />
+                                  <SelectValue placeholder="Wybierz zadanie nadrzędne" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="none">No parent task</SelectItem>
+                                <SelectItem value="none">Brak zadania nadrzędnego</SelectItem>
                                 {tasks.map((task) => (
                                   <SelectItem key={task.id} value={task.id}>
                                     {task.title}
@@ -439,7 +440,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                               </SelectContent>
                             </Select>
                             <FormDescription>
-                              Optional parent task for this task
+                              Opcjonalne zadanie nadrzędne dla tego zadania
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -454,10 +455,10 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                       variant="outline"
                       onClick={() => router.push(`/tasks/${taskId}`)}
                     >
-                      Cancel
+                      Anuluj
                     </Button>
                     <Button type="submit" disabled={isLoading}>
-                      {isLoading ? 'Saving...' : 'Save Changes'}
+                      {isLoading ? 'Zapisywanie...' : 'Zapisz zmiany'}
                     </Button>
                   </div>
                 </form>

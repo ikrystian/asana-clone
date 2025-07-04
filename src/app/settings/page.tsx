@@ -56,19 +56,19 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 const profileSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
+  name: z.string().min(2, 'Imię musi mieć co najmniej 2 znaki'),
+  email: z.string().email('Nieprawidłowy adres e-mail'),
   bio: z.string().optional(),
   role: z.string().optional(),
   department: z.string().optional(),
 });
 
 const passwordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string().min(8, 'Password must be at least 8 characters'),
+  currentPassword: z.string().min(1, 'Aktualne hasło jest wymagane'),
+  newPassword: z.string().min(8, 'Hasło musi mieć co najmniej 8 znaków'),
+  confirmPassword: z.string().min(8, 'Hasło musi mieć co najmniej 8 znaków'),
 }).refine(data => data.newPassword === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: "Hasła nie pasują do siebie",
   path: ["confirmPassword"],
 });
 
@@ -141,9 +141,9 @@ export default function SettingsPage() {
           profileForm.setValue('email', session.user.email || '');
           
           // Mock data for demonstration
-          profileForm.setValue('bio', 'Product manager with 5+ years of experience in SaaS products.');
-          profileForm.setValue('role', 'Product Manager');
-          profileForm.setValue('department', 'Product');
+          profileForm.setValue('bio', 'Menedżer produktu z ponad 5-letnim doświadczeniem w produktach SaaS.');
+          profileForm.setValue('role', 'Menedżer produktu');
+          profileForm.setValue('department', 'Produkt');
           
           // Mock notification settings
           notificationForm.setValue('emailNotifications', true);
@@ -155,8 +155,8 @@ export default function SettingsPage() {
           notificationForm.setValue('weeklyDigest', true);
         }
       } catch (error) {
-        console.error('Error fetching user data:', error);
-        toast.error('Failed to load user data');
+        console.error('Błąd podczas pobierania danych użytkownika:', error);
+        toast.error('Nie udało się załadować danych użytkownika');
       } finally {
         setIsLoading(false);
       }
@@ -182,10 +182,10 @@ export default function SettingsPage() {
         },
       });
       
-      toast.success('Profile updated successfully');
+      toast.success('Profil został pomyślnie zaktualizowany');
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      console.error('Błąd podczas aktualizacji profilu:', error);
+      toast.error('Nie udało się zaktualizować profilu');
     } finally {
       setIsSaving(false);
     }
@@ -199,11 +199,11 @@ export default function SettingsPage() {
       // For now, we'll simulate it
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success('Password changed successfully');
+      toast.success('Hasło zostało pomyślnie zmienione');
       passwordForm.reset();
     } catch (error) {
-      console.error('Error changing password:', error);
-      toast.error('Failed to change password');
+      console.error('Błąd podczas zmiany hasła:', error);
+      toast.error('Nie udało się zmienić hasła');
     } finally {
       setIsChangingPassword(false);
     }
@@ -217,10 +217,10 @@ export default function SettingsPage() {
       // For now, we'll simulate it
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success('Notification settings updated');
+      toast.success('Ustawienia powiadomień zostały zaktualizowane');
     } catch (error) {
-      console.error('Error updating notification settings:', error);
-      toast.error('Failed to update notification settings');
+      console.error('Błąd podczas aktualizacji ustawień powiadomień:', error);
+      toast.error('Nie udało się zaktualizować ustawień powiadomień');
     } finally {
       setIsSaving(false);
     }
@@ -234,14 +234,14 @@ export default function SettingsPage() {
       // For now, we'll simulate it
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      toast.success('Account deleted successfully');
+      toast.success('Konto zostało pomyślnie usunięte');
       setIsDeleteDialogOpen(false);
       
       // Sign out and redirect to home page
       router.push('/auth/signout');
     } catch (error) {
-      console.error('Error deleting account:', error);
-      toast.error('Failed to delete account');
+      console.error('Błąd podczas usuwania konta:', error);
+      toast.error('Nie udało się usunąć konta');
     } finally {
       setIsDeleting(false);
     }
@@ -259,30 +259,30 @@ export default function SettingsPage() {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Settings</h1>
+        <h1 className="text-3xl font-bold mb-6">Ustawienia</h1>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid grid-cols-3 w-full max-w-md">
             <TabsTrigger value="profile">
               <User className="h-4 w-4 mr-2" />
-              Profile
+              Profil
             </TabsTrigger>
             <TabsTrigger value="notifications">
               <Bell className="h-4 w-4 mr-2" />
-              Notifications
+              Powiadomienia
             </TabsTrigger>
             <TabsTrigger value="security">
               <Shield className="h-4 w-4 mr-2" />
-              Security
+              Bezpieczeństwo
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="profile" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
+                <CardTitle>Informacje o profilu</CardTitle>
                 <CardDescription>
-                  Update your account profile information and settings
+                  Zaktualizuj informacje o profilu swojego konta i ustawienia
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -312,10 +312,10 @@ export default function SettingsPage() {
                         <div>
                           <Button variant="outline" size="sm" className="mb-1">
                             <Upload className="h-4 w-4 mr-2" />
-                            Change Avatar
+                            Zmień awatar
                           </Button>
                           <p className="text-xs text-muted-foreground">
-                            JPG, GIF or PNG. Max size of 2MB.
+                            JPG, GIF lub PNG. Maksymalny rozmiar 2MB.
                           </p>
                         </div>
                       </div>
@@ -326,9 +326,9 @@ export default function SettingsPage() {
                           name="name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Name</FormLabel>
+                              <FormLabel>Imię i nazwisko</FormLabel>
                               <FormControl>
-                                <Input placeholder="Your name" {...field} />
+                                <Input placeholder="Twoje imię i nazwisko" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -340,9 +340,9 @@ export default function SettingsPage() {
                           name="email"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Email</FormLabel>
+                              <FormLabel>E-mail</FormLabel>
                               <FormControl>
-                                <Input placeholder="Your email" {...field} />
+                                <Input placeholder="Twój e-mail" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -354,12 +354,12 @@ export default function SettingsPage() {
                           name="role"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Role</FormLabel>
+                              <FormLabel>Rola</FormLabel>
                               <FormControl>
-                                <Input placeholder="Your role" {...field} />
+                                <Input placeholder="Twoja rola" {...field} />
                               </FormControl>
                               <FormDescription>
-                                Your role in the organization
+                                Twoja rola w organizacji
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -371,29 +371,29 @@ export default function SettingsPage() {
                           name="department"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Department</FormLabel>
+                              <FormLabel>Dział</FormLabel>
                               <Select
                                 onValueChange={field.onChange}
                                 defaultValue={field.value}
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select department" />
+                                    <SelectValue placeholder="Wybierz dział" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="Engineering">Engineering</SelectItem>
-                                  <SelectItem value="Design">Design</SelectItem>
-                                  <SelectItem value="Product">Product</SelectItem>
+                                  <SelectItem value="Engineering">Inżynieria</SelectItem>
+                                  <SelectItem value="Design">Projekt</SelectItem>
+                                  <SelectItem value="Product">Produkt</SelectItem>
                                   <SelectItem value="Marketing">Marketing</SelectItem>
-                                  <SelectItem value="Sales">Sales</SelectItem>
-                                  <SelectItem value="Operations">Operations</SelectItem>
+                                  <SelectItem value="Sales">Sprzedaż</SelectItem>
+                                  <SelectItem value="Operations">Operacje</SelectItem>
                                   <SelectItem value="HR">HR</SelectItem>
-                                  <SelectItem value="Finance">Finance</SelectItem>
+                                  <SelectItem value="Finance">Finanse</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormDescription>
-                                Your department in the organization
+                                Twój dział w organizacji
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -406,16 +406,16 @@ export default function SettingsPage() {
                         name="bio"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Bio</FormLabel>
+                            <FormLabel>Biografia</FormLabel>
                             <FormControl>
                               <Textarea
-                                placeholder="Tell us about yourself"
+                                placeholder="Opowiedz nam o sobie"
                                 className="min-h-32"
                                 {...field}
                               />
                             </FormControl>
                             <FormDescription>
-                              Brief description about yourself
+                              Krótki opis o sobie
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -424,7 +424,7 @@ export default function SettingsPage() {
                       
                       <div className="flex justify-end">
                         <Button type="submit" disabled={isSaving}>
-                          {isSaving ? 'Saving...' : 'Save Changes'}
+                          {isSaving ? 'Zapisywanie...' : 'Zapisz zmiany'}
                         </Button>
                       </div>
                     </form>
@@ -437,9 +437,9 @@ export default function SettingsPage() {
           <TabsContent value="notifications" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Notification Settings</CardTitle>
+                <CardTitle>Ustawienia powiadomień</CardTitle>
                 <CardDescription>
-                  Manage how you receive notifications
+                  Zarządzaj sposobem otrzymywania powiadomień
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -461,9 +461,9 @@ export default function SettingsPage() {
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-base">Email Notifications</FormLabel>
+                              <FormLabel className="text-base">Powiadomienia e-mail</FormLabel>
                               <FormDescription>
-                                Receive notifications via email
+                                Otrzymuj powiadomienia pocztą elektroniczną
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -479,7 +479,7 @@ export default function SettingsPage() {
                       <Separator />
                       
                       <div className="space-y-4">
-                        <h3 className="text-lg font-medium">Notification Types</h3>
+                        <h3 className="text-lg font-medium">Rodzaje powiadomień</h3>
                         
                         <FormField
                           control={notificationForm.control}
@@ -487,9 +487,9 @@ export default function SettingsPage() {
                           render={({ field }) => (
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                               <div className="space-y-0.5">
-                                <FormLabel>Task Assigned</FormLabel>
+                                <FormLabel>Zadanie przypisane</FormLabel>
                                 <FormDescription>
-                                  When a task is assigned to you
+                                  Gdy zadanie zostanie Ci przypisane
                                 </FormDescription>
                               </div>
                               <FormControl>
@@ -508,9 +508,9 @@ export default function SettingsPage() {
                           render={({ field }) => (
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                               <div className="space-y-0.5">
-                                <FormLabel>Task Completed</FormLabel>
+                                <FormLabel>Zadanie ukończone</FormLabel>
                                 <FormDescription>
-                                  When a task you created is completed
+                                  Gdy utworzone przez Ciebie zadanie zostanie ukończone
                                 </FormDescription>
                               </div>
                               <FormControl>
@@ -529,9 +529,9 @@ export default function SettingsPage() {
                           render={({ field }) => (
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                               <div className="space-y-0.5">
-                                <FormLabel>Mentioned in Comment</FormLabel>
+                                <FormLabel>Wzmianka w komentarzu</FormLabel>
                                 <FormDescription>
-                                  When someone mentions you in a comment
+                                  Gdy ktoś wspomni o Tobie w komentarzu
                                 </FormDescription>
                               </div>
                               <FormControl>
@@ -550,9 +550,9 @@ export default function SettingsPage() {
                           render={({ field }) => (
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                               <div className="space-y-0.5">
-                                <FormLabel>Project Updates</FormLabel>
+                                <FormLabel>Aktualizacje projektu</FormLabel>
                                 <FormDescription>
-                                  When there are updates to your projects
+                                  Gdy pojawią się aktualizacje w Twoich projektach
                                 </FormDescription>
                               </div>
                               <FormControl>
@@ -569,7 +569,7 @@ export default function SettingsPage() {
                       <Separator />
                       
                       <div className="space-y-4">
-                        <h3 className="text-lg font-medium">Digest Emails</h3>
+                        <h3 className="text-lg font-medium">Wiadomości e-mail z podsumowaniem</h3>
                         
                         <FormField
                           control={notificationForm.control}
@@ -577,9 +577,9 @@ export default function SettingsPage() {
                           render={({ field }) => (
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                               <div className="space-y-0.5">
-                                <FormLabel>Daily Digest</FormLabel>
+                                <FormLabel>Podsumowanie dzienne</FormLabel>
                                 <FormDescription>
-                                  Receive a daily summary of your tasks
+                                  Otrzymuj codzienne podsumowanie swoich zadań
                                 </FormDescription>
                               </div>
                               <FormControl>
@@ -598,9 +598,9 @@ export default function SettingsPage() {
                           render={({ field }) => (
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                               <div className="space-y-0.5">
-                                <FormLabel>Weekly Digest</FormLabel>
+                                <FormLabel>Podsumowanie tygodniowe</FormLabel>
                                 <FormDescription>
-                                  Receive a weekly summary of your tasks
+                                  Otrzymuj cotygodniowe podsumowanie swoich zadań
                                 </FormDescription>
                               </div>
                               <FormControl>
@@ -616,7 +616,7 @@ export default function SettingsPage() {
                       
                       <div className="flex justify-end">
                         <Button type="submit" disabled={isSaving}>
-                          {isSaving ? 'Saving...' : 'Save Changes'}
+                          {isSaving ? 'Zapisywanie...' : 'Zapisz zmiany'}
                         </Button>
                       </div>
                     </form>
@@ -629,9 +629,9 @@ export default function SettingsPage() {
           <TabsContent value="security" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Change Password</CardTitle>
+                <CardTitle>Zmień hasło</CardTitle>
                 <CardDescription>
-                  Update your password to keep your account secure
+                  Zaktualizuj swoje hasło, aby Twoje konto było bezpieczne
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -649,7 +649,7 @@ export default function SettingsPage() {
                         name="currentPassword"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Current Password</FormLabel>
+                            <FormLabel>Aktualne hasło</FormLabel>
                             <FormControl>
                               <Input type="password" placeholder="••••••••" {...field} />
                             </FormControl>
@@ -663,12 +663,12 @@ export default function SettingsPage() {
                         name="newPassword"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>New Password</FormLabel>
+                            <FormLabel>Nowe hasło</FormLabel>
                             <FormControl>
                               <Input type="password" placeholder="••••••••" {...field} />
                             </FormControl>
                             <FormDescription>
-                              Password must be at least 8 characters
+                              Hasło musi mieć co najmniej 8 znaków
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -680,7 +680,7 @@ export default function SettingsPage() {
                         name="confirmPassword"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Confirm New Password</FormLabel>
+                            <FormLabel>Potwierdź nowe hasło</FormLabel>
                             <FormControl>
                               <Input type="password" placeholder="••••••••" {...field} />
                             </FormControl>
@@ -691,7 +691,7 @@ export default function SettingsPage() {
                       
                       <div className="flex justify-end">
                         <Button type="submit" disabled={isChangingPassword}>
-                          {isChangingPassword ? 'Changing...' : 'Change Password'}
+                          {isChangingPassword ? 'Zmienianie...' : 'Zmień hasło'}
                         </Button>
                       </div>
                     </form>
@@ -702,17 +702,17 @@ export default function SettingsPage() {
             
             <Card className="border-destructive/50">
               <CardHeader>
-                <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                <CardTitle className="text-destructive">Strefa zagrożenia</CardTitle>
                 <CardDescription>
-                  Irreversible and destructive actions
+                  Nieodwracalne i niszczące działania
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium">Delete Account</h3>
+                    <h3 className="font-medium">Usuń konto</h3>
                     <p className="text-sm text-muted-foreground">
-                      Permanently delete your account and all of your data
+                      Trwale usuń swoje konto i wszystkie swoje dane
                     </p>
                   </div>
                   <Button 
@@ -720,7 +720,7 @@ export default function SettingsPage() {
                     onClick={() => setIsDeleteDialogOpen(true)}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Account
+                    Usuń konto
                   </Button>
                 </div>
               </CardContent>
@@ -732,9 +732,9 @@ export default function SettingsPage() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Account</DialogTitle>
+            <DialogTitle>Usuń konto</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete your account? This action cannot be undone and all of your data will be permanently deleted.
+              Czy na pewno chcesz usunąć swoje konto? Tej akcji nie można cofnąć, a wszystkie Twoje dane zostaną trwale usunięte.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -743,23 +743,23 @@ export default function SettingsPage() {
               <div className="text-sm">{session?.user?.email}</div>
             </div>
             <p className="text-sm text-muted-foreground">
-              Please type <strong>delete my account</strong> to confirm.
+              Wpisz <strong>usuń moje konto</strong>, aby potwierdzić.
             </p>
-            <Input placeholder="delete my account" />
+            <Input placeholder="usuń moje konto" />
           </div>
           <DialogFooter>
             <Button 
               variant="outline" 
               onClick={() => setIsDeleteDialogOpen(false)}
             >
-              Cancel
+              Anuluj
             </Button>
             <Button 
               variant="destructive"
               onClick={handleDeleteAccount}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Deleting...' : 'Delete Account'}
+              {isDeleting ? 'Usuwanie...' : 'Usuń konto'}
             </Button>
           </DialogFooter>
         </DialogContent>
