@@ -10,12 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Search, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  Clock, 
+import {
+  Search,
+  Mail,
   BarChart2,
   Users,
   UserPlus,

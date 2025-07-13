@@ -4,7 +4,6 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,7 +11,7 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Form, 
   FormControl, 
@@ -37,16 +36,17 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, CalendarIcon } from 'lucide-react';
+import { ChevronLeft, CalendarIcon, Check, ChevronDown } from 'lucide-react';
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 
 const taskSchema = z.object({
-  title: z.string().min(1, 'Tytuł jest wymagany'),
+  title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
   status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE']),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
   dueDate: z.date().optional().nullable(),
-  assigneeId: z.string().optional().nullable(),
+  assignedUserIds: z.array(z.string().uuid()).optional(),
   sectionId: z.string().optional().nullable(),
   parentTaskId: z.string().optional().nullable(),
 });
@@ -57,9 +57,8 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const [project, setProject] = useState<any>(null);
-  const [users, setUsers] = useState<any[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [project, setProject] = useState<Project | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   // Unwrap params outside of try/catch
   const resolvedParams = use(params);
@@ -73,7 +72,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
       status: 'TODO',
       priority: 'MEDIUM',
       dueDate: null,
-      assigneeId: null,
+      assignedUserIds: [],
       sectionId: null,
       parentTaskId: null,
     },
@@ -87,7 +86,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
         // Fetch task details
         const taskResponse = await fetch(`/api/tasks/${taskId}`);
         if (!taskResponse.ok) {
-          throw new Error('Nie udało się pobrać zadania');
+          throw new Error('Failed to fetch task');
         }
         const taskData = await taskResponse.json();
         
@@ -96,7 +95,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
         form.setValue('description', taskData.description || '');
         form.setValue('status', taskData.status);
         form.setValue('priority', taskData.priority);
-        form.setValue('assigneeId', taskData.assignee?.id || null);
+        form.setValue('assignedUserIds', taskData.assignedUsers?.map((assignment: { userId: string }) => assignment.userId) || []);
         form.setValue('sectionId', taskData.section?.id || null);
         form.setValue('parentTaskId', taskData.parentTask?.id || null);
         
@@ -117,7 +116,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
           if (tasksResponse.ok) {
             const tasksData = await tasksResponse.json();
             // Filter out the current task and its subtasks to avoid circular references
-            const filteredTasks = tasksData.filter((t: any) => 
+            const filteredTasks = tasksData.filter((t: Task) => 
               t.id !== taskId && 
               (!t.parentTask || t.parentTask.id !== taskId)
             );
@@ -126,14 +125,14 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
         }
         
         // Fetch users for assignee selection
-        const usersResponse = await fetch('/api/users');
-        if (usersResponse.ok) {
-          const usersData = await usersResponse.json();
-          setUsers(usersData);
-        }
+        // const usersResponse = await fetch('/api/users');
+        // if (usersResponse.ok) {
+        //   const usersData = await usersResponse.json();
+        //   setUsers(usersData);
+        // }
       } catch (error) {
-        console.error('Błąd podczas pobierania danych zadania:', error);
-        toast.error('Nie udało się załadować danych zadania');
+        console.error('Error fetching task data:', error);
+        toast.error('Failed to load task data');
       } finally {
         setIsLoadingData(false);
       }
@@ -154,32 +153,27 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
         body: JSON.stringify({
           ...data,
           dueDate: data.dueDate ? data.dueDate.toISOString() : null,
+          assignedUserIds: data.assignedUserIds || [],
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        toast.error(result.error || 'Nie udało się zaktualizować zadania');
+        toast.error(result.error || 'Failed to update task');
         return;
       }
 
-      toast.success('Zadanie zostało pomyślnie zaktualizowane!');
+      toast.success('Task updated successfully!');
       router.push(`/tasks/${taskId}`);
     } catch (error) {
-      toast.error('Coś poszło nie tak. Proszę spróbować ponownie.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
   }
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase();
-  };
+  
 
   return (
     <DashboardLayout>
@@ -187,9 +181,9 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
         <div className="flex items-center mb-6">
           <Button variant="ghost" onClick={() => router.back()}>
             <ChevronLeft className="mr-2 h-4 w-4" />
-            Wróć
+            Back
           </Button>
-          <h1 className="text-2xl font-bold ml-4">Edytuj zadanie</h1>
+          <h1 className="text-2xl font-bold ml-4">Edit Task</h1>
         </div>
 
         {isLoadingData ? (
@@ -207,7 +201,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>Szczegóły zadania</CardTitle>
+              <CardTitle>Task Details</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -217,9 +211,9 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tytuł</FormLabel>
+                        <FormLabel>Title</FormLabel>
                         <FormControl>
-                          <Input placeholder="Tytuł zadania" {...field} />
+                          <Input placeholder="Task title" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -231,10 +225,10 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Opis</FormLabel>
+                        <FormLabel>Description</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Opis zadania"
+                            placeholder="Task description"
                             className="min-h-32"
                             {...field}
                           />
@@ -257,14 +251,14 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Wybierz status" />
+                                <SelectValue placeholder="Select status" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="TODO">Do zrobienia</SelectItem>
-                              <SelectItem value="IN_PROGRESS">W toku</SelectItem>
-                              <SelectItem value="REVIEW">Recenzja</SelectItem>
-                              <SelectItem value="DONE">Zakończone</SelectItem>
+                              <SelectItem value="TODO">To Do</SelectItem>
+                              <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                              <SelectItem value="REVIEW">Review</SelectItem>
+                              <SelectItem value="DONE">Done</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -277,21 +271,21 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                       name="priority"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Priorytet</FormLabel>
+                          <FormLabel>Priority</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Wybierz priorytet" />
+                                <SelectValue placeholder="Select priority" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="LOW">Niski</SelectItem>
-                              <SelectItem value="MEDIUM">Średni</SelectItem>
-                              <SelectItem value="HIGH">Wysoki</SelectItem>
-                              <SelectItem value="URGENT">Pilny</SelectItem>
+                              <SelectItem value="LOW">Low</SelectItem>
+                              <SelectItem value="MEDIUM">Medium</SelectItem>
+                              <SelectItem value="HIGH">High</SelectItem>
+                              <SelectItem value="URGENT">Urgent</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -304,7 +298,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                       name="dueDate"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>Termin</FormLabel>
+                          <FormLabel>Due Date</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
@@ -316,9 +310,9 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                                   )}
                                 >
                                   {field.value ? (
-                                    format(field.value, "PPP", { locale: pl })
+                                    format(field.value, "PPP")
                                   ) : (
-                                    <span>Brak terminu</span>
+                                    <span>No due date</span>
                                   )}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
@@ -338,7 +332,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                                   className="w-full"
                                   onClick={() => field.onChange(null)}
                                 >
-                                  Wyczyść datę
+                                  Clear date
                                 </Button>
                               </div>
                             </PopoverContent>
@@ -350,34 +344,60 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
 
                     <FormField
                       control={form.control}
-                      name="assigneeId"
+                      name="assignedUserIds"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Przypisany</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value || "unassigned"}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Wybierz przypisanego" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="unassigned">Nieprzypisany</SelectItem>
-                              {users.map((user) => (
-                                <SelectItem key={user.id} value={user.id}>
-                                  <div className="flex items-center">
-                                    <Avatar className="h-6 w-6 mr-2">
-                                      <AvatarImage src={user.image || ''} alt={user.name} />
-                                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                                    </Avatar>
-                                    {user.name}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <FormLabel>Assignees</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  className="w-full justify-between"
+                                >
+                                  {field.value && field.value.length > 0
+                                    ? `${field.value.length} selected`
+                                    : "Select assignees..."}
+                                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                              <Command>
+                                <CommandInput placeholder="Search members..." />
+                                <CommandEmpty>No members found.</CommandEmpty>
+                                <CommandGroup>
+                                  {project?.members.map((member) => (
+                                    <CommandItem
+                                      key={member.user.id}
+                                      onSelect={() => {
+                                        const currentAssigned = field.value || [];
+                                        if (currentAssigned.includes(member.user.id)) {
+                                          field.onChange(currentAssigned.filter((id) => id !== member.user.id));
+                                        } else {
+                                          field.onChange([...currentAssigned, member.user.id]);
+                                        }
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          field.value && field.value.includes(member.user.id)
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {member.user.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          <FormDescription>
+                            Optional: Assign this task to one or more team members
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -389,19 +409,19 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                         name="sectionId"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Sekcja</FormLabel>
+                            <FormLabel>Section</FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value || "none"}
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Wybierz sekcję" />
+                                  <SelectValue placeholder="Select section" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="none">Brak sekcji</SelectItem>
-                                {project.sections.map((section: any) => (
+                                <SelectItem value="none">No section</SelectItem>
+                                {project.sections.map((section: Section) => (
                                   <SelectItem key={section.id} value={section.id}>
                                     {section.name}
                                   </SelectItem>
@@ -420,18 +440,18 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                         name="parentTaskId"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Zadanie nadrzędne</FormLabel>
+                            <FormLabel>Parent Task</FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value || "none"}
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Wybierz zadanie nadrzędne" />
+                                  <SelectValue placeholder="Select parent task" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="none">Brak zadania nadrzędnego</SelectItem>
+                                <SelectItem value="none">No parent task</SelectItem>
                                 {tasks.map((task) => (
                                   <SelectItem key={task.id} value={task.id}>
                                     {task.title}
@@ -440,7 +460,7 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                               </SelectContent>
                             </Select>
                             <FormDescription>
-                              Opcjonalne zadanie nadrzędne dla tego zadania
+                              Optional parent task for this task
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -455,10 +475,10 @@ export default function EditTaskPage({ params }: { params: Promise<{ taskId: str
                       variant="outline"
                       onClick={() => router.push(`/tasks/${taskId}`)}
                     >
-                      Anuluj
+                      Cancel
                     </Button>
                     <Button type="submit" disabled={isLoading}>
-                      {isLoading ? 'Zapisywanie...' : 'Zapisz zmiany'}
+                      {isLoading ? 'Saving...' : 'Save Changes'}
                     </Button>
                   </div>
                 </form>

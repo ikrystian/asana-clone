@@ -34,7 +34,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { KanbanBoard } from '@/components/project/kanban-board';
 import { CalendarView } from '@/components/project/calendar-view';
@@ -97,12 +96,15 @@ interface Task {
   dueDate: string | null;
   completedAt: string | null;
   sectionId: string | null;
-  assignee: {
+  assignedUsers: Array<{
     id: string;
-    name: string;
-    email: string;
-    image: string | null;
-  } | null;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      image: string | null;
+    };
+  }>;
   subtasks: Array<{
     id: string;
     title: string;
@@ -125,7 +127,7 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [view, setView] = useState('list');
+  
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -348,11 +350,13 @@ export default function ProjectPage({ params }: { params: Promise<{ projectId: s
                                   {new Date(task.dueDate).toLocaleDateString()}
                                 </div>
                               )}
-                              {task.assignee && (
-                                <div className="flex items-center">
-                                  <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
-                                    {task.assignee.name.charAt(0)}
-                                  </div>
+                              {task.assignedUsers && task.assignedUsers.length > 0 && (
+                                <div className="flex items-center -space-x-2 overflow-hidden">
+                                  {task.assignedUsers.map((assignment) => (
+                                    <div key={assignment.user.id} className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium ring-2 ring-background">
+                                      {assignment.user.name.charAt(0)}
+                                    </div>
+                                  ))}
                                 </div>
                               )}
                               <div

@@ -10,23 +10,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { 
   Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+  SelectContent,
+  SelectItem,
+  SelectTrigger
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Search, 
-  Plus, 
-  Filter, 
-  Calendar, 
-  CheckCircle2, 
-  Clock, 
+import {
+  Search,
+  Plus,
+  Filter,
+  Calendar,
+  CheckCircle2,
+  Clock,
   AlertTriangle,
   ChevronDown,
   MoreHorizontal
@@ -54,12 +53,15 @@ interface Task {
     name: string;
     color: string;
   };
-  assignee: {
+  assignedUsers: Array<{
     id: string;
-    name: string;
-    email: string;
-    image: string | null;
-  } | null;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      image: string | null;
+    };
+  }>;
 }
 
 export default function TasksPage() {
@@ -478,11 +480,15 @@ export default function TasksPage() {
                               {format(new Date(task.dueDate), 'MMM d')}
                             </div>
                           )}
-                          {task.assignee && (
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={task.assignee.image || ''} alt={task.assignee.name} />
-                              <AvatarFallback>{getInitials(task.assignee.name)}</AvatarFallback>
-                            </Avatar>
+                          {task.assignedUsers && task.assignedUsers.length > 0 && (
+                            <div className="flex items-center -space-x-2 overflow-hidden">
+                              {task.assignedUsers.map((assignment) => (
+                                <Avatar key={assignment.user.id} className="h-8 w-8 ring-2 ring-background">
+                                  <AvatarImage src={assignment.user.image || ''} alt={assignment.user.name} />
+                                  <AvatarFallback>{getInitials(assignment.user.name)}</AvatarFallback>
+                                </Avatar>
+                              ))}
+                            </div>
                           )}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

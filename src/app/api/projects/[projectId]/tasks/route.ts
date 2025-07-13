@@ -11,7 +11,7 @@ const taskSchema = z.object({
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
   dueDate: z.string().optional().nullable(),
   sectionId: z.string().optional(),
-  assigneeId: z.string().optional().nullable(),
+  assignedUserIds: z.array(z.string().uuid()).optional(),
   parentTaskId: z.string().optional().nullable(),
 });
 
@@ -58,12 +58,16 @@ export async function GET(
         parentTaskId: null, // Only get top-level tasks
       },
       include: {
-        assignee: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
+        assignedUsers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
           },
         },
         creator: {
@@ -77,12 +81,16 @@ export async function GET(
         section: true,
         subtasks: {
           include: {
-            assignee: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
+            assignedUsers: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    image: true,
+                  },
+                },
               },
             },
           },
@@ -130,7 +138,7 @@ export async function POST(
 
     const { projectId } = await params;
     const body = await req.json();
-    const { title, description, status, priority, dueDate, sectionId, assigneeId, parentTaskId } = taskSchema.parse(body);
+    const { title, description, status, priority, dueDate, sectionId, assignedUserIds, parentTaskId } = taskSchema.parse(body);
 
     // Check if project exists and user has access
     const project = await prisma.project.findFirst({
@@ -205,13 +213,6 @@ export async function POST(
               },
             }
           : undefined,
-        assignee: assigneeId
-          ? {
-              connect: {
-                id: assigneeId,
-              },
-            }
-          : undefined,
         creator: {
           connect: {
             id: session.user.id,
@@ -226,14 +227,6 @@ export async function POST(
           : undefined,
       },
       include: {
-        assignee: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
-        },
         creator: {
           select: {
             id: true,
@@ -246,41 +239,29 @@ export async function POST(
       },
     });
 
-    // If this is a subtask, create a notification for the parent task assignee
-    if (parentTaskId) {
-      const parentTask = await prisma.task.findUnique({
-        where: {
-          id: parentTaskId,
-        },
-        include: {
-          assignee: true,
-        },
+    // Create task assignments
+    if (assignedUserIds && assignedUserIds.length > 0) {
+      await prisma.taskAssignment.createMany({
+        data: assignedUserIds.map((userId) => ({
+          taskId: task.id,
+          userId,
+        })),
       });
 
-      if (parentTask?.assigneeId && parentTask.assigneeId !== session.user.id) {
-        await prisma.notification.create({
-          data: {
-            type: 'TASK_ASSIGNED',
-            content: `A subtask "${task.title}" was added to "${parentTask.title}"`,
-            recipientId: parentTask.assigneeId,
-            relatedItemId: task.id,
-            relatedItemType: 'task',
-          },
-        });
+      // Create notifications for assigned users
+      for (const userId of assignedUserIds) {
+        if (userId !== session.user.id) {
+          await prisma.notification.create({
+            data: {
+              type: 'TASK_ASSIGNED',
+              content: `You were assigned to "${task.title}"`,
+              recipientId: userId,
+              relatedItemId: task.id,
+              relatedItemType: 'task',
+            },
+          });
+        }
       }
-    }
-
-    // If task is assigned to someone, create a notification
-    if (assigneeId && assigneeId !== session.user.id) {
-      await prisma.notification.create({
-        data: {
-          type: 'TASK_ASSIGNED',
-          content: `You were assigned to "${task.title}"`,
-          recipientId: assigneeId,
-          relatedItemId: task.id,
-          relatedItemType: 'task',
-        },
-      });
     }
 
     return NextResponse.json(task, { status: 201 });

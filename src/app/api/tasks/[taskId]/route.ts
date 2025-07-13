@@ -11,8 +11,8 @@ const taskUpdateSchema = z.object({
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
   dueDate: z.string().optional().nullable(),
   sectionId: z.string().optional(),
-  assigneeId: z.string().optional().nullable(),
   order: z.number().optional(),
+  assignedUserIds: z.array(z.string().uuid()).optional(),
 });
 
 // Get a specific task
@@ -48,12 +48,16 @@ export async function GET(
         },
       },
       include: {
-        assignee: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
+        assignedUsers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
           },
         },
         creator: {
@@ -81,12 +85,16 @@ export async function GET(
         },
         subtasks: {
           include: {
-            assignee: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
+            assignedUsers: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    image: true,
+                  },
+                },
               },
             },
           },
@@ -158,7 +166,7 @@ export async function PATCH(
 
     const { taskId } = await params;
     const body = await req.json();
-    const { title, description, status, priority, dueDate, sectionId, assigneeId, order } = taskUpdateSchema.parse(body);
+    const { title, description, status, priority, dueDate, sectionId, order, assignedUserIds } = taskUpdateSchema.parse(body);
 
     // Get task with project access check
     const task = await prisma.task.findFirst({
@@ -202,18 +210,9 @@ export async function PATCH(
         dueDate: dueDate ? new Date(dueDate) : null,
         completedAt: isCompletingTask ? new Date() : (status !== 'DONE' ? null : task.completedAt),
         sectionId,
-        assigneeId,
         order,
       },
       include: {
-        assignee: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
-        },
         creator: {
           select: {
             id: true,
@@ -223,38 +222,52 @@ export async function PATCH(
           },
         },
         section: true,
+        assignedUsers: true, // Include assigned users to compare later
       },
     });
 
-    // Create notifications for status changes
-    if (isCompletingTask && task.creatorId !== session.user.id) {
-      await prisma.notification.create({
-        data: {
-          type: 'TASK_COMPLETED',
-          content: `Task "${updatedTask.title}" was completed`,
-          recipientId: task.creatorId,
-          relatedItemId: taskId,
-          relatedItemType: 'task',
+    // Handle assigned users
+    const existingAssignedUserIds = task.assignedUsers.map(au => au.userId);
+    const usersToAssign = assignedUserIds || [];
+
+    // Users to remove
+    const usersToRemove = existingAssignedUserIds.filter(userId => !usersToAssign.includes(userId));
+    if (usersToRemove.length > 0) {
+      await prisma.taskAssignment.deleteMany({
+        where: {
+          taskId,
+          userId: { in: usersToRemove },
         },
       });
     }
 
-    // Create notification for assignment changes
-    if (
-      assigneeId &&
-      assigneeId !== task.assigneeId &&
-      assigneeId !== session.user.id
-    ) {
-      await prisma.notification.create({
-        data: {
-          type: 'TASK_ASSIGNED',
-          content: `You were assigned to "${updatedTask.title}"`,
-          recipientId: assigneeId,
-          relatedItemId: taskId,
-          relatedItemType: 'task',
-        },
+    // Users to add
+    const usersToAdd = usersToAssign.filter(userId => !existingAssignedUserIds.includes(userId));
+    if (usersToAdd.length > 0) {
+      await prisma.taskAssignment.createMany({
+        data: usersToAdd.map(userId => ({
+          taskId,
+          userId,
+        })),
       });
+
+      // Create notifications for newly assigned users
+      for (const userId of usersToAdd) {
+        if (userId !== session.user.id) {
+          await prisma.notification.create({
+            data: {
+              type: 'TASK_ASSIGNED',
+              content: `You were assigned to "${updatedTask.title}"`,
+              recipientId: userId,
+              relatedItemId: taskId,
+              relatedItemType: 'task',
+            },
+          });
+        }
+      }
     }
+
+    
 
     return NextResponse.json(updatedTask);
   } catch (error) {

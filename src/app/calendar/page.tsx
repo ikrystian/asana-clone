@@ -20,23 +20,20 @@ import {
 import { pl } from 'date-fns/locale';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue
+  SelectTrigger
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+
 import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  Filter,
-  Calendar as CalendarIcon
+  Filter
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -74,7 +71,7 @@ export default function CalendarPage() {
     const end = endOfMonth(currentMonth);
 
     // Get all days in the month
-    const monthDays = eachDayOfInterval({ start, end });
+    
 
     // Get the start of the first week (might be in previous month)
     const firstWeekStart = startOfWeek(start, { weekStartsOn: 0 });
@@ -94,7 +91,7 @@ export default function CalendarPage() {
   useEffect(() => {
     if (tasks.length > 0) {
       filterTasks();
-    }
+    } // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks, projectFilter]);
 
   // Initialize filtered tasks with all tasks when tasks are first loaded

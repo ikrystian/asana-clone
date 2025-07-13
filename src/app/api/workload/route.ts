@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth';
-import { startOfWeek, endOfWeek, addDays } from 'date-fns';
+import { addDays } from 'date-fns';
 
 // Get workload data for team members
 export async function GET(req: Request) {
@@ -18,17 +18,9 @@ export async function GET(req: Request) {
     const weekParam = url.searchParams.get('week');
 
     // Set date range (default to current week)
-    let currentDate = new Date();
-
-    if (weekParam) {
-      currentDate = new Date(weekParam);
-    }
-
-    // Get start and end of the week
-    const start = startOfWeek(currentDate, { weekStartsOn: 1 }); // Start on Monday
-    const end = endOfWeek(currentDate, { weekStartsOn: 1 }); // End on Sunday
-
-    // Get projects the user has access to
+    const today = weekParam ? new Date(weekParam) : new Date();
+    const start = startOfWeek(today, { weekStartsOn: 1 }); // Start on Monday
+    const end = endOfWeek(today, { weekStartsOn: 1 }); // End on Sunday
     const projects = await prisma.project.findMany({
       where: {
         OR: [
@@ -89,7 +81,11 @@ export async function GET(req: Request) {
         // Get all tasks assigned to this user
         const tasks = await prisma.task.findMany({
           where: {
-            assigneeId: user.id,
+            assignedUsers: {
+              some: {
+                userId: user.id,
+              },
+            },
             project: {
               id: { in: projectIds },
             },

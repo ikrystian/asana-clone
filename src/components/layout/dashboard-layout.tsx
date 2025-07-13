@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { ReactNode, useState } from 'react';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
+import { ReactNode, useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import {
   LayoutGrid,
   CheckSquare,
@@ -15,20 +15,21 @@ import {
   PlusSquare,
   Bell,
   Search,
-  LogOut
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+  LogOut,
+  Building2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { signOut, useSession } from 'next-auth/react';
-import { cn } from '@/lib/utils';
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { signOut, useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -40,29 +41,30 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { data: session } = useSession();
 
   const navigation = [
-    { name: 'Pulpit', href: '/dashboard', icon: LayoutGrid },
-    { name: 'Moje zadania', href: '/tasks', icon: CheckSquare },
-    { name: 'Kalendarz', href: '/calendar', icon: Calendar },
-    { name: 'Obciążenie pracą', href: '/workload', icon: Users },
-    { name: 'Raporty', href: '/reports', icon: BarChart2 },
-    { name: 'Zespół', href: '/team', icon: Users },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+    { name: "My Tasks", href: "/tasks", icon: CheckSquare },
+    { name: "Calendar", href: "/calendar", icon: Calendar },
+    { name: "Klienci", href: "/clients", icon: Building2 },
+    { name: "Workload", href: "/workload", icon: Users },
+    { name: "Reports", href: "/reports", icon: BarChart2 },
+    { name: "Team", href: "/team", icon: Users },
   ];
 
   const userInitials = session?.user?.name
     ? session.user.name
-        .split(' ')
+        .split(" ")
         .map((n) => n[0])
-        .join('')
+        .join("")
         .toUpperCase()
-    : 'U';
+    : "U";
 
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar for mobile */}
       <div
         className={cn(
-          'fixed inset-0 z-50 bg-background/80 backdrop-blur-sm lg:hidden',
-          sidebarOpen ? 'block' : 'hidden'
+          "fixed inset-0 z-50 bg-background/80 backdrop-blur-sm lg:hidden",
+          sidebarOpen ? "block" : "hidden"
         )}
         onClick={() => setSidebarOpen(false)}
       />
@@ -70,8 +72,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:z-auto',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:z-auto",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex items-center justify-between h-16 px-4 border-b">
@@ -79,7 +81,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
               <span className="text-primary-foreground font-bold">A</span>
             </div>
-            <span className="text-xl font-bold">Klon Asany</span>
+            <span className="text-xl font-bold">Asana Clone</span>
           </Link>
           <Button
             variant="ghost"
@@ -94,7 +96,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <Button variant="outline" className="w-full justify-start" asChild>
             <Link href="/projects/new">
               <PlusSquare className="mr-2 h-4 w-4" />
-              Nowy projekt
+              New Project
             </Link>
           </Button>
         </div>
@@ -104,10 +106,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               key={item.name}
               href={item.href}
               className={cn(
-                'flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                "flex items-center px-2 py-2 text-sm font-medium rounded-md",
                 pathname === item.href
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-foreground hover:bg-muted'
+                  ? "bg-primary text-primary-foreground"
+                  : "text-foreground hover:bg-muted"
               )}
             >
               <item.icon className="mr-3 h-5 w-5" />
@@ -122,7 +124,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               className="flex items-center px-2 py-2 text-sm font-medium rounded-md text-foreground hover:bg-muted"
             >
               <Settings className="mr-3 h-5 w-5" />
-              Ustawienia
+              Settings
             </Link>
           </div>
         </div>
@@ -145,7 +147,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Szukaj..."
+                placeholder="Search..."
                 className="w-full pl-8 pr-4 py-2 text-sm border rounded-md bg-background"
               />
             </div>
@@ -158,26 +160,32 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={session?.user?.image || ''} alt={session?.user?.name || 'Użytkownik'} />
+                    <AvatarImage
+                      src={session?.user?.image || ""}
+                      alt={session?.user?.name || "User"}
+                    />
                     <AvatarFallback>{userInitials}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Moje konto</DropdownMenuLabel>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">Profil</Link>
+                  <Link href="/profile">Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/settings">Ustawienia</Link>
+                  <Link href="/settings">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })}>
+                <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Wyloguj się</span>
+                  <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

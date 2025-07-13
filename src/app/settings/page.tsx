@@ -11,7 +11,7 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Form, 
   FormControl, 
@@ -32,16 +32,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import { 
-  User, 
-  Bell, 
-  Shield, 
-  LogOut, 
+import {
+  User,
+  Bell,
+  Shield,
   Upload,
-  Save,
   Trash2,
-  Mail,
-  Key
+  Mail
 } from 'lucide-react';
 import {
   Dialog,
@@ -50,10 +47,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Imię musi mieć co najmniej 2 znaki'),

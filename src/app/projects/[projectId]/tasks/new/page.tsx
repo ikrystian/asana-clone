@@ -7,8 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Check, ChevronDown } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,16 +17,17 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 
 const taskSchema = z.object({
-  title: z.string().min(1, 'Tytuł zadania jest wymagany'),
+  title: z.string().min(1, 'Task title is required'),
   description: z.string().optional(),
   status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE']),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
   dueDate: z.date().optional().nullable(),
   sectionId: z.string().optional(),
-  assigneeId: z.string().optional().nullable(),
+  assignedUserIds: z.array(z.string().uuid()).optional(),
   parentTaskId: z.string().optional().nullable(),
 });
 
@@ -40,12 +40,15 @@ interface Project {
     id: string;
     name: string;
   }>;
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
+  members: Array<{
+    id: string;
+    role: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  }>;
 }
 
 interface Task {
@@ -57,7 +60,6 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [project, setProject] = useState<Project | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
@@ -70,7 +72,7 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
       priority: 'MEDIUM',
       dueDate: null,
       sectionId: undefined,
-      assigneeId: null,
+      assignedUserIds: [],
       parentTaskId: null,
     },
   });
@@ -87,7 +89,7 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
         // Fetch project details
         const projectResponse = await fetch(`/api/projects/${projectId}`);
         if (!projectResponse.ok) {
-          throw new Error('Nie udało się pobrać projektu');
+          throw new Error('Failed to fetch project');
         }
         const projectData = await projectResponse.json();
         setProject(projectData);
@@ -97,22 +99,15 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
           form.setValue('sectionId', projectData.sections[0].id);
         }
 
-        // Fetch all users
-        const usersResponse = await fetch('/api/users');
-        if (usersResponse.ok) {
-          const usersData = await usersResponse.json();
-          setUsers(usersData);
-        }
-
         // Fetch project tasks for parent task selection
         const tasksResponse = await fetch(`/api/projects/${projectId}/tasks`);
         if (tasksResponse.ok) {
           const tasksData = await tasksResponse.json();
           setTasks(tasksData);
         }
-      } catch (error) {
-        console.error('Błąd podczas pobierania danych projektu lub użytkowników:', error);
-        toast.error('Nie udało się załadować danych projektu lub użytkowników');
+      } catch (error: unknown) {
+        console.error('Error fetching project data:', error);
+        toast.error('Failed to load project data');
       } finally {
         setIsLoadingData(false);
       }
@@ -129,7 +124,7 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
       const processedData = {
         ...data,
         dueDate: data.dueDate ? data.dueDate.toISOString() : null,
-        assigneeId: data.assigneeId === 'unassigned' ? null : data.assigneeId,
+        assignedUserIds: data.assignedUserIds || [],
         parentTaskId: data.parentTaskId === 'none' ? null : data.parentTaskId,
       };
 
@@ -144,14 +139,14 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
       const result = await response.json();
 
       if (!response.ok) {
-        toast.error(result.error || 'Nie udało się utworzyć zadania');
+        toast.error(result.error || 'Failed to create task');
         return;
       }
 
-      toast.success('Zadanie zostało pomyślnie utworzone!');
+      toast.success('Task created successfully!');
       router.push(`/projects/${projectId}`);
-    } catch (error) {
-      toast.error('Coś poszło nie tak. Proszę spróbować ponownie.');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -161,12 +156,12 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
     return (
       <DashboardLayout>
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Utwórz nowe zadanie</h1>
+          <h1 className="text-3xl font-bold mb-6">Create New Task</h1>
           <Card>
             <CardHeader>
-              <CardTitle>Ładowanie...</CardTitle>
+              <CardTitle>Loading...</CardTitle>
               <CardDescription>
-                Proszę czekać, ładujemy dane projektu
+                Please wait while we load the project data
               </CardDescription>
             </CardHeader>
           </Card>
@@ -179,17 +174,17 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
     return (
       <DashboardLayout>
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Nie znaleziono projektu</h1>
+          <h1 className="text-3xl font-bold mb-6">Project Not Found</h1>
           <Card>
             <CardHeader>
-              <CardTitle>Błąd</CardTitle>
+              <CardTitle>Error</CardTitle>
               <CardDescription>
-                Projekt, dla którego próbujesz utworzyć zadanie, nie istnieje lub nie masz do niego dostępu.
+                The project you are trying to create a task for does not exist or you do not have access to it.
               </CardDescription>
             </CardHeader>
             <CardFooter>
               <Button onClick={() => router.push('/dashboard')}>
-                Wróć do pulpitu
+                Return to Dashboard
               </Button>
             </CardFooter>
           </Card>
@@ -201,13 +196,13 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Utwórz nowe zadanie</h1>
+        <h1 className="text-3xl font-bold mb-6">Create New Task</h1>
 
         <Card>
           <CardHeader>
-            <CardTitle>Szczegóły zadania</CardTitle>
+            <CardTitle>Task Details</CardTitle>
             <CardDescription>
-              Utwórz nowe zadanie w projekcie: {project.name}
+              Create a new task in project: {project.name}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -218,9 +213,9 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tytuł zadania</FormLabel>
+                      <FormLabel>Task Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="Zaprojektuj makietę strony głównej" {...field} />
+                        <Input placeholder="Design homepage mockup" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -232,17 +227,17 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Opis</FormLabel>
+                      <FormLabel>Description</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Opisz szczegółowo zadanie..."
+                          placeholder="Describe the task in detail..."
                           className="min-h-[100px]"
                           {...field}
                           value={field.value || ''}
                         />
                       </FormControl>
                       <FormDescription>
-                        Opcjonalnie: dodaj szczegóły, wymagania lub kontekst dla tego zadania
+                        Optional: Add details, requirements, or context for this task
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -262,14 +257,14 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Wybierz status" />
+                              <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="TODO">Do zrobienia</SelectItem>
-                            <SelectItem value="IN_PROGRESS">W toku</SelectItem>
-                            <SelectItem value="REVIEW">Recenzja</SelectItem>
-                            <SelectItem value="DONE">Zakończone</SelectItem>
+                            <SelectItem value="TODO">To Do</SelectItem>
+                            <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                            <SelectItem value="REVIEW">Review</SelectItem>
+                            <SelectItem value="DONE">Done</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -282,21 +277,21 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                     name="priority"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Priorytet</FormLabel>
+                        <FormLabel>Priority</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Wybierz priorytet" />
+                              <SelectValue placeholder="Select priority" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="LOW">Niski</SelectItem>
-                            <SelectItem value="MEDIUM">Średni</SelectItem>
-                            <SelectItem value="HIGH">Wysoki</SelectItem>
-                            <SelectItem value="URGENT">Pilny</SelectItem>
+                            <SelectItem value="LOW">Low</SelectItem>
+                            <SelectItem value="MEDIUM">Medium</SelectItem>
+                            <SelectItem value="HIGH">High</SelectItem>
+                            <SelectItem value="URGENT">Urgent</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -311,7 +306,7 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                     name="dueDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>Termin</FormLabel>
+                        <FormLabel>Due Date</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -323,9 +318,9 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP", { locale: pl })
+                                  format(field.value, "PPP")
                                 ) : (
-                                  <span>Wybierz datę</span>
+                                  <span>Pick a date</span>
                                 )}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -341,7 +336,7 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                           </PopoverContent>
                         </Popover>
                         <FormDescription>
-                          Opcjonalnie: ustaw termin wykonania tego zadania
+                          Optional: Set a deadline for this task
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -353,14 +348,14 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                     name="sectionId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Sekcja</FormLabel>
+                        <FormLabel>Section</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Wybierz sekcję" />
+                              <SelectValue placeholder="Select section" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -380,30 +375,59 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="assigneeId"
+                    name="assignedUserIds"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Przypisany</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value || undefined}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Nieprzypisany" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="unassigned">Nieprzypisany</SelectItem>
-                            {users.map((user) => (
-                              <SelectItem key={user.id} value={user.id}>
-                                {user.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormLabel>Assignees</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className="w-full justify-between"
+                              >
+                                {field.value && field.value.length > 0
+                                  ? `${field.value.length} selected`
+                                  : "Select assignees..."}
+                                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                              <CommandInput placeholder="Search members..." />
+                              <CommandEmpty>No members found.</CommandEmpty>
+                              <CommandGroup>
+                                {project.members.map((member) => (
+                                  <CommandItem
+                                    key={member.user.id}
+                                    onSelect={() => {
+                                      const currentAssigned = field.value || [];
+                                      if (currentAssigned.includes(member.user.id)) {
+                                        field.onChange(currentAssigned.filter((id) => id !== member.user.id));
+                                      } else {
+                                        field.onChange([...currentAssigned, member.user.id]);
+                                      }
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value && field.value.includes(member.user.id)
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {member.user.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormDescription>
-                          Opcjonalnie: przypisz to zadanie członkowi zespołu
+                          Optional: Assign this task to one or more team members
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -415,18 +439,18 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                     name="parentTaskId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Zadanie nadrzędne</FormLabel>
+                        <FormLabel>Parent Task</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value || undefined}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Brak zadania nadrzędnego" />
+                              <SelectValue placeholder="No parent task" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="none">Brak zadania nadrzędnego</SelectItem>
+                            <SelectItem value="none">No parent task</SelectItem>
                             {tasks.map((task) => (
                               <SelectItem key={task.id} value={task.id}>
                                 {task.title}
@@ -435,7 +459,7 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                           </SelectContent>
                         </Select>
                         <FormDescription>
-                          Opcjonalnie: uczyń to zadanie podzadaniem innego zadania
+                          Optional: Make this a subtask of another task
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -450,10 +474,10 @@ export default function NewTaskPage({ params }: { params: Promise<{ projectId: s
                     onClick={() => router.back()}
                     disabled={isLoading}
                   >
-                    Anuluj
+                    Cancel
                   </Button>
                   <Button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Tworzenie...' : 'Utwórz zadanie'}
+                    {isLoading ? 'Creating...' : 'Create Task'}
                   </Button>
                 </div>
               </form>

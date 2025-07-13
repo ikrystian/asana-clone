@@ -14,8 +14,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 const loginSchema = z.object({
-  email: z.string().email('Nieprawidłowy adres e-mail'),
-  password: z.string().min(1, 'Hasło jest wymagane'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -43,14 +43,14 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        toast.error('Nieprawidłowy e-mail lub hasło');
+        toast.error('Invalid email or password');
         return;
       }
 
       router.push('/dashboard');
       router.refresh();
-    } catch (error) {
-      toast.error('Coś poszło nie tak. Proszę spróbować ponownie.');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -65,9 +65,9 @@ export default function LoginPage() {
               <span className="text-primary-foreground font-bold">A</span>
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Zaloguj się</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Sign in</CardTitle>
           <CardDescription className="text-center">
-            Wprowadź swój e-mail i hasło, aby uzyskać dostęp do swojego konta
+            Enter your email and password to access your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -78,7 +78,7 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>E-mail</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input placeholder="email@example.com" {...field} />
                     </FormControl>
@@ -91,7 +91,7 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hasło</FormLabel>
+                    <FormLabel>Password</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
@@ -100,16 +100,16 @@ export default function LoginPage() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Logowanie...' : 'Zaloguj się'}
+                {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-center text-sm">
-            Nie masz konta?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/register" className="text-primary hover:underline">
-              Zarejestruj się
+              Sign up
             </Link>
           </div>
         </CardFooter>

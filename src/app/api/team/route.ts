@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth';
 
-// Get team members
+// Get all registered users as team members
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -12,60 +12,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get projects the user has access to
-    const projects = await prisma.project.findMany({
-      where: {
-        OR: [
-          { ownerId: session.user.id },
-          {
-            members: {
-              some: {
-                userId: session.user.id,
-              },
-            },
-          },
-          { isPublic: true },
-        ],
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    const projectIds = projects.map(project => project.id);
-
-    // Get team members from user's projects
+    // Get all registered users
     const teamMembers = await prisma.user.findMany({
-      where: {
-        OR: [
-          // Include project owners
-          {
-            ownedProjects: {
-              some: {
-                id: { in: projectIds },
-              },
-            },
-          },
-          // Include project members
-          {
-            memberProjects: {
-              some: {
-                projectId: { in: projectIds },
-              },
-            },
-          },
-        ],
-      },
       select: {
         id: true,
         name: true,
         email: true,
         image: true,
-        // Get projects for each user
+        // Get all projects for each user
         ownedProjects: {
-          where: {
-            id: { in: projectIds },
-          },
           select: {
             id: true,
             name: true,
@@ -73,9 +28,6 @@ export async function GET() {
           },
         },
         memberProjects: {
-          where: {
-            projectId: { in: projectIds },
-          },
           select: {
             project: {
               select: {
@@ -87,7 +39,9 @@ export async function GET() {
           },
         },
       },
-      distinct: ['id'],
+      orderBy: {
+        name: 'asc',
+      },
     });
 
     // Get task statistics for each user
@@ -97,9 +51,6 @@ export async function GET() {
         const assignedTasks = await prisma.task.count({
           where: {
             assigneeId: member.id,
-            project: {
-              id: { in: projectIds },
-            },
           },
         });
 
@@ -108,9 +59,6 @@ export async function GET() {
           where: {
             assigneeId: member.id,
             status: 'DONE',
-            project: {
-              id: { in: projectIds },
-            },
           },
         });
 

@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     });
 
     // Return user without password
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user; // eslint-disable-line @typescript-eslint/no-unused-vars
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

@@ -10,14 +10,14 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const projectSchema = z.object({
-  name: z.string().min(2, 'Nazwa projektu musi mieć co najmniej 2 znaki'),
+  name: z.string().min(2, 'Project name must be at least 2 characters'),
   description: z.string().optional(),
-  color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Nieprawidłowy format koloru'),
+  color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid color format'),
   isPublic: z.boolean().default(false),
 });
 
@@ -64,14 +64,14 @@ export default function NewProjectPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        toast.error(result.error || 'Nie udało się utworzyć projektu');
+        toast.error(result.error || 'Failed to create project');
         return;
       }
 
-      toast.success('Projekt został pomyślnie utworzony!');
+      toast.success('Project created successfully!');
       router.push(`/projects/${result.id}`);
-    } catch (error) {
-      toast.error('Coś poszło nie tak. Proszę spróbować ponownie.');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -80,13 +80,13 @@ export default function NewProjectPage() {
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Utwórz nowy projekt</h1>
+        <h1 className="text-3xl font-bold mb-6">Create New Project</h1>
         
         <Card>
           <CardHeader>
-            <CardTitle>Szczegóły projektu</CardTitle>
+            <CardTitle>Project Details</CardTitle>
             <CardDescription>
-              Wypełnij szczegóły, aby utworzyć nowy projekt
+              Fill in the details to create a new project
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -97,12 +97,12 @@ export default function NewProjectPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nazwa projektu</FormLabel>
+                      <FormLabel>Project Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Kampania marketingowa" {...field} />
+                        <Input placeholder="Marketing Campaign" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Nadaj swojemu projektowi jasną i opisową nazwę
+                        Give your project a clear and descriptive name
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -114,16 +114,16 @@ export default function NewProjectPage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Opis</FormLabel>
+                      <FormLabel>Description</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Opisz cel i założenia tego projektu..." 
+                          placeholder="Describe the purpose and goals of this project..." 
                           className="min-h-[100px]"
                           {...field} 
                         />
                       </FormControl>
                       <FormDescription>
-                        Opcjonalnie: dodaj szczegóły dotyczące celu i założeń projektu
+                        Optional: Add details about the project&apos;s purpose and goals
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -135,7 +135,7 @@ export default function NewProjectPage() {
                   name="color"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Kolor projektu</FormLabel>
+                      <FormLabel>Project Color</FormLabel>
                       <div className="flex flex-wrap gap-2 mb-2">
                         {defaultColors.map((color) => (
                           <div
@@ -152,7 +152,7 @@ export default function NewProjectPage() {
                         <Input type="color" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Wybierz kolor do identyfikacji swojego projektu
+                        Choose a color to identify your project
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -171,9 +171,9 @@ export default function NewProjectPage() {
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel>Projekt publiczny</FormLabel>
+                        <FormLabel>Public Project</FormLabel>
                         <FormDescription>
-                          Udostępnij ten projekt każdemu, kto ma link
+                          Make this project visible to anyone with the link
                         </FormDescription>
                       </div>
                     </FormItem>
@@ -187,10 +187,10 @@ export default function NewProjectPage() {
                     onClick={() => router.back()}
                     disabled={isLoading}
                   >
-                    Anuluj
+                    Cancel
                   </Button>
                   <Button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Tworzenie...' : 'Utwórz projekt'}
+                    {isLoading ? 'Creating...' : 'Create Project'}
                   </Button>
                 </div>
               </form>

@@ -28,8 +28,7 @@ import {
   Form, 
   FormControl, 
   FormField, 
-  FormItem, 
-  FormLabel 
+  FormItem 
 } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
 
@@ -50,7 +49,6 @@ interface CustomFieldValue {
 
 interface CustomFieldsProps {
   taskId: string;
-  projectId: string;
   customFields: CustomField[];
   customFieldValues: CustomFieldValue[];
   onAddField?: () => void;

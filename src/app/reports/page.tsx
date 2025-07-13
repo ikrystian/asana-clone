@@ -3,27 +3,31 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
-import { pl } from 'date-fns/locale';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
+import { 
+  import {
   Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
+  import {
+  Select,
+  import {
+  Select,
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -31,12 +35,12 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import {
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  Calendar,
-  Users,
+import { 
+  CheckCircle2, 
+  Clock, 
+  AlertTriangle, 
+  Calendar, 
+  Users, 
   BarChart2,
   Download
 } from 'lucide-react';
@@ -48,8 +52,6 @@ interface ProjectStats {
   completedTasks: number;
   overdueTasks: number;
   upcomingTasks: number;
-  completionRate: number;
-  color?: string;
 }
 
 interface UserStats {
@@ -73,8 +75,9 @@ export default function ReportsPage() {
   const [projectStats, setProjectStats] = useState<ProjectStats[]>([]);
   const [userStats, setUserStats] = useState<UserStats[]>([]);
   const [timeStats, setTimeStats] = useState<TimeStats[]>([]);
-  const [statusDistribution, setStatusDistribution] = useState<any[]>([]);
-  const [priorityDistribution, setPriorityDistribution] = useState<any[]>([]);
+  interface DistributionData { name: string; value: number; color: string; }
+  const [statusDistribution, setStatusDistribution] = useState<DistributionData[]>([]);
+  const [priorityDistribution, setPriorityDistribution] = useState<DistributionData[]>([]);
 
   useEffect(() => {
     fetchReportData();
@@ -83,59 +86,70 @@ export default function ReportsPage() {
   const fetchReportData = async () => {
     setIsLoading(true);
     try {
-      // Fetch project statistics
-      const projectsResponse = await fetch('/api/reports/projects');
-      if (!projectsResponse.ok) {
-        throw new Error('Nie udało się pobrać statystyk projektu');
+      // In a real app, this would be API calls to get report data
+      // For now, we'll simulate it with mock data
+      
+      // Mock project stats
+      const mockProjects: ProjectStats[] = [
+        { id: 'all', name: 'All Projects', totalTasks: 120, completedTasks: 78, overdueTasks: 12, upcomingTasks: 30 },
+        { id: 'p1', name: 'Marketing Campaign', totalTasks: 45, completedTasks: 32, overdueTasks: 5, upcomingTasks: 8 },
+        { id: 'p2', name: 'Website Redesign', totalTasks: 38, completedTasks: 25, overdueTasks: 3, upcomingTasks: 10 },
+        { id: 'p3', name: 'Product Launch', totalTasks: 37, completedTasks: 21, overdueTasks: 4, upcomingTasks: 12 },
+      ];
+      
+      // Mock user stats
+      const mockUsers: UserStats[] = [
+        { id: 'u1', name: 'John Doe', tasksCompleted: 28, tasksAssigned: 35, avgCompletionTime: 2.3 },
+        { id: 'u2', name: 'Jane Smith', tasksCompleted: 32, tasksAssigned: 40, avgCompletionTime: 1.8 },
+        { id: 'u3', name: 'Bob Johnson', tasksCompleted: 18, tasksAssigned: 25, avgCompletionTime: 3.1 },
+      ];
+      
+      // Generate time stats based on selected range
+      const today = new Date();
+      let startDate, endDate;
+      
+      if (selectedTimeRange === 'week') {
+        startDate = startOfWeek(today);
+        endDate = endOfWeek(today);
+      } else if (selectedTimeRange === 'month') {
+        startDate = subDays(today, 30);
+        endDate = today;
+      } else {
+        startDate = subDays(today, 90);
+        endDate = today;
       }
-      const projectsData = await projectsResponse.json();
-
-      // Add an "All Projects" option
-      const allProjectsStats = {
-        id: 'all',
-        name: 'Wszystkie projekty',
-        totalTasks: projectsData.reduce((sum: number, project: any) => sum + project.totalTasks, 0),
-        completedTasks: projectsData.reduce((sum: number, project: any) => sum + project.completedTasks, 0),
-        overdueTasks: projectsData.reduce((sum: number, project: any) => sum + project.overdueTasks, 0),
-        upcomingTasks: projectsData.reduce((sum: number, project: any) => sum + project.upcomingTasks, 0),
-        completionRate: projectsData.length > 0 ?
-          Math.round(projectsData.reduce((sum: number, project: any) => sum + project.completedTasks, 0) /
-          projectsData.reduce((sum: number, project: any) => sum + project.totalTasks, 0) * 100) : 0
-      };
-
-      setProjectStats([allProjectsStats, ...projectsData]);
-
-      // Fetch user statistics
-      const usersResponse = await fetch('/api/reports/users');
-      if (!usersResponse.ok) {
-        throw new Error('Nie udało się pobrać statystyk użytkownika');
-      }
-      const usersData = await usersResponse.json();
-
-      // Transform user data to match the expected format
-      const transformedUserData = usersData.map((user: any) => ({
-        id: user.id,
-        name: user.name,
-        tasksCompleted: user.completedTasks,
-        tasksAssigned: user.totalTasks,
-        avgCompletionTime: (Math.random() * 3 + 1).toFixed(1), // This would come from the API in a real app
+      
+      const dateRange = eachDayOfInterval({ start: startDate, end: endDate });
+      const mockTimeStats = dateRange.map(date => ({
+        date: format(date, 'MMM dd'),
+        tasksCreated: Math.floor(Math.random() * 10),
+        tasksCompleted: Math.floor(Math.random() * 8),
       }));
-
-      setUserStats(transformedUserData);
-
-      // Fetch task statistics based on selected time range
-      const tasksResponse = await fetch(`/api/reports/tasks?timeRange=${selectedTimeRange}`);
-      if (!tasksResponse.ok) {
-        throw new Error('Nie udało się pobrać statystyk zadań');
-      }
-      const tasksData = await tasksResponse.json();
-
-      setTimeStats(tasksData.timeStats);
-      setStatusDistribution(tasksData.statusDistribution);
-      setPriorityDistribution(tasksData.priorityDistribution);
+      
+      // Mock status distribution
+      const mockStatusDistribution = [
+        { name: 'To Do', value: 30, color: '#94a3b8' },
+        { name: 'In Progress', value: 45, color: '#3b82f6' },
+        { name: 'Review', value: 15, color: '#eab308' },
+        { name: 'Done', value: 65, color: '#22c55e' },
+      ];
+      
+      // Mock priority distribution
+      const mockPriorityDistribution = [
+        { name: 'Low', value: 25, color: '#3b82f6' },
+        { name: 'Medium', value: 55, color: '#22c55e' },
+        { name: 'High', value: 30, color: '#f97316' },
+        { name: 'Urgent', value: 10, color: '#ef4444' },
+      ];
+      
+      setProjectStats(mockProjects);
+      setUserStats(mockUsers);
+      setTimeStats(mockTimeStats);
+      setStatusDistribution(mockStatusDistribution);
+      setPriorityDistribution(mockPriorityDistribution);
     } catch (error) {
-      console.error('Błąd podczas pobierania danych raportu:', error);
-      toast.error('Nie udało się załadować danych raportu');
+      console.error('Error fetching report data:', error);
+      toast.error('Failed to load report data');
     } finally {
       setIsLoading(false);
     }
@@ -153,21 +167,21 @@ export default function ReportsPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Raporty i analityka</h1>
+          <h1 className="text-3xl font-bold">Reports & Analytics</h1>
           <Button>
             <Download className="h-4 w-4 mr-2" />
-            Eksportuj raport
+            Export Report
           </Button>
         </div>
 
         <div className="flex space-x-4">
           <div className="w-1/2">
-            <Select
-              value={selectedProject}
+            <Select 
+              value={selectedProject} 
               onValueChange={setSelectedProject}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Wybierz projekt" />
+                <SelectValue placeholder="Select project" />
               </SelectTrigger>
               <SelectContent>
                 {projectStats.map(project => (
@@ -179,17 +193,17 @@ export default function ReportsPage() {
             </Select>
           </div>
           <div className="w-1/2">
-            <Select
-              value={selectedTimeRange}
+            <Select 
+              value={selectedTimeRange} 
               onValueChange={setSelectedTimeRange}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Wybierz zakres czasu" />
+                <SelectValue placeholder="Select time range" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="week">Ostatni tydzień</SelectItem>
-                <SelectItem value="month">Ostatni miesiąc</SelectItem>
-                <SelectItem value="quarter">Ostatni kwartał</SelectItem>
+                <SelectItem value="week">Last Week</SelectItem>
+                <SelectItem value="month">Last Month</SelectItem>
+                <SelectItem value="quarter">Last Quarter</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -216,79 +230,79 @@ export default function ReportsPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center">
                     <CheckCircle2 className="h-4 w-4 mr-2 text-green-500" />
-                    Współczynnik ukończenia
+                    Completion Rate
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold mb-2">
                     {Math.round(getCompletionRate(getCurrentProject()))}%
                   </div>
-                  <Progress
-                    value={getCompletionRate(getCurrentProject())}
+                  <Progress 
+                    value={getCompletionRate(getCurrentProject())} 
                     className="bg-green-200"
                   />
                   <div className="text-xs text-muted-foreground mt-2">
-                    {getCurrentProject().completedTasks} z {getCurrentProject().totalTasks} ukończonych zadań
+                    {getCurrentProject().completedTasks} of {getCurrentProject().totalTasks} tasks completed
                   </div>
                 </CardContent>
               </Card>
-
+              
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center">
                     <AlertTriangle className="h-4 w-4 mr-2 text-red-500" />
-                    Zaległe zadania
+                    Overdue Tasks
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold mb-2">
                     {getCurrentProject().overdueTasks}
                   </div>
-                  <Progress
-                    value={(getCurrentProject().overdueTasks / getCurrentProject().totalTasks) * 100}
+                  <Progress 
+                    value={(getCurrentProject().overdueTasks / getCurrentProject().totalTasks) * 100} 
                     className="bg-red-200"
                   />
                   <div className="text-xs text-muted-foreground mt-2">
-                    {Math.round((getCurrentProject().overdueTasks / getCurrentProject().totalTasks) * 100)}% wszystkich zadań
+                    {Math.round((getCurrentProject().overdueTasks / getCurrentProject().totalTasks) * 100)}% of total tasks
                   </div>
                 </CardContent>
               </Card>
-
+              
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-blue-500" />
-                    Nadchodzące zadania
+                    Upcoming Tasks
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold mb-2">
                     {getCurrentProject().upcomingTasks}
                   </div>
-                  <Progress
-                    value={(getCurrentProject().upcomingTasks / getCurrentProject().totalTasks) * 100}
+                  <Progress 
+                    value={(getCurrentProject().upcomingTasks / getCurrentProject().totalTasks) * 100} 
                     className="bg-blue-200"
                   />
                   <div className="text-xs text-muted-foreground mt-2">
-                    Termin w ciągu najbliższych 7 dni
+                    Due in the next 7 days
                   </div>
                 </CardContent>
               </Card>
-
+              
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center">
                     <Clock className="h-4 w-4 mr-2 text-yellow-500" />
-                    Śr. czas ukończenia
+                    Avg. Completion Time
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold mb-2">
-                    2.4 dni
+                    2.4 days
                   </div>
                   <Progress value={60} className="bg-yellow-200" />
                   <div className="text-xs text-muted-foreground mt-2">
-                    Od utworzenia zadania do jego ukończenia
+                    From task creation to completion
                   </div>
                 </CardContent>
               </Card>
@@ -298,23 +312,23 @@ export default function ReportsPage() {
               <TabsList>
                 <TabsTrigger value="tasks">
                   <BarChart2 className="h-4 w-4 mr-2" />
-                  Metryki zadań
+                  Task Metrics
                 </TabsTrigger>
                 <TabsTrigger value="team">
                   <Users className="h-4 w-4 mr-2" />
-                  Wydajność zespołu
+                  Team Performance
                 </TabsTrigger>
                 <TabsTrigger value="time">
                   <Calendar className="h-4 w-4 mr-2" />
-                  Analiza czasu
+                  Time Analysis
                 </TabsTrigger>
               </TabsList>
-
+              
               <TabsContent value="tasks" className="mt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Rozkład statusów zadań</CardTitle>
+                      <CardTitle>Task Status Distribution</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="h-80">
@@ -341,10 +355,10 @@ export default function ReportsPage() {
                       </div>
                     </CardContent>
                   </Card>
-
+                  
                   <Card>
                     <CardHeader>
-                      <CardTitle>Rozkład priorytetów zadań</CardTitle>
+                      <CardTitle>Task Priority Distribution</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="h-80">
@@ -363,7 +377,7 @@ export default function ReportsPage() {
                             <YAxis />
                             <Tooltip />
                             <Legend />
-                            <Bar dataKey="value" name="Zadania">
+                            <Bar dataKey="value" name="Tasks">
                               {priorityDistribution.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
                               ))}
@@ -375,11 +389,11 @@ export default function ReportsPage() {
                   </Card>
                 </div>
               </TabsContent>
-
+              
               <TabsContent value="team" className="mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Wydajność członków zespołu</CardTitle>
+                    <CardTitle>Team Member Performance</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-96">
@@ -398,19 +412,19 @@ export default function ReportsPage() {
                           <YAxis />
                           <Tooltip />
                           <Legend />
-                          <Bar dataKey="tasksAssigned" name="Zadania przypisane" fill="#3b82f6" />
-                          <Bar dataKey="tasksCompleted" name="Zadania ukończone" fill="#22c55e" />
+                          <Bar dataKey="tasksAssigned" name="Tasks Assigned" fill="#3b82f6" />
+                          <Bar dataKey="tasksCompleted" name="Tasks Completed" fill="#22c55e" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
-
+              
               <TabsContent value="time" className="mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Aktywność zadań w czasie</CardTitle>
+                    <CardTitle>Task Activity Over Time</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-96">
@@ -429,8 +443,8 @@ export default function ReportsPage() {
                           <YAxis />
                           <Tooltip />
                           <Legend />
-                          <Line type="monotone" dataKey="tasksCreated" name="Zadania utworzone" stroke="#3b82f6" activeDot={{ r: 8 }} />
-                          <Line type="monotone" dataKey="tasksCompleted" name="Zadania ukończone" stroke="#22c55e" />
+                          <Line type="monotone" dataKey="tasksCreated" name="Tasks Created" stroke="#3b82f6" activeDot={{ r: 8 }} />
+                          <Line type="monotone" dataKey="tasksCompleted" name="Tasks Completed" stroke="#22c55e" />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>

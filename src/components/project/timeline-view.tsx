@@ -13,7 +13,6 @@ import {
   addMonths,
   subMonths
 } from 'date-fns';
-import { pl } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -26,12 +25,15 @@ interface Task {
   priority: string;
   dueDate: string | null;
   startDate?: string | null;
-  assignee: {
+  assignedUsers: Array<{
     id: string;
-    name: string;
-    email: string;
-    image: string | null;
-  } | null;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      image: string | null;
+    };
+  }>;
   subtasks?: Task[];
 }
 
@@ -136,7 +138,7 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">{format(currentMonth, 'MMMM yyyy', { locale: pl })}</h2>
+        <h2 className="text-xl font-bold">{format(currentMonth, 'MMMM yyyy')}</h2>
         <div className="flex space-x-2">
           <Button variant="outline" size="icon" onClick={prevMonth}>
             <ChevronLeft className="h-4 w-4" />
@@ -152,7 +154,7 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
           <div className="min-w-[1200px]">
             {/* Timeline header */}
             <div className="flex border-b">
-              <div className="w-48 min-w-48 p-2 border-r bg-muted/50 font-medium">Zadanie</div>
+              <div className="w-48 min-w-48 p-2 border-r bg-muted/50 font-medium">Task</div>
               <div className="flex-1 flex">
                 {days.map((day) => (
                   <div
@@ -172,7 +174,7 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
             {/* Month indicators */}
             <div className="flex border-b">
               <div className="w-48 min-w-48 p-2 border-r bg-muted/50 font-medium">
-                Przypisany
+                Assignees
               </div>
               <div className="flex-1 flex">
                 {days.map((day, index) => {
@@ -192,7 +194,7 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
                     >
                       {(isFirstOfMonth || isFirstDay) && (
                         <span className="text-[8px] text-muted-foreground">
-                          {format(day, 'MMM', { locale: pl })}
+                          {format(day, 'MMM')}
                         </span>
                       )}
                     </div>
@@ -204,7 +206,7 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
             {/* Tasks */}
             {timelineTasks.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                Brak zadań z terminami do wyświetlenia
+                No tasks with due dates to display
               </div>
             ) : (
               timelineTasks.map((task) => {
@@ -220,21 +222,25 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
                         <div className="font-medium text-sm truncate">{task.title}</div>
                         <div className="text-xs text-muted-foreground">
                           {task.status === 'TODO'
-                            ? 'Do zrobienia'
+                            ? 'To Do'
                             : task.status === 'IN_PROGRESS'
-                            ? 'W toku'
+                            ? 'In Progress'
                             : task.status === 'REVIEW'
-                            ? 'Recenzja'
-                            : 'Zakończone'}
+                            ? 'Review'
+                            : 'Done'}
                         </div>
                       </div>
-                      {task.assignee && (
-                        <Avatar className="h-6 w-6 ml-2">
-                          <AvatarImage src={task.assignee.image || ''} alt={task.assignee.name} />
-                          <AvatarFallback className="text-xs">
-                            {getInitials(task.assignee.name)}
-                          </AvatarFallback>
-                        </Avatar>
+                      {task.assignedUsers && task.assignedUsers.length > 0 && (
+                        <div className="flex items-center -space-x-2 overflow-hidden">
+                          {task.assignedUsers.map((assignment) => (
+                            <Avatar key={assignment.user.id} className="h-6 w-6 ring-2 ring-background">
+                              <AvatarImage src={assignment.user.image || ''} alt={assignment.user.name} />
+                              <AvatarFallback className="text-xs">
+                                {getInitials(assignment.user.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                          ))}
+                        </div>
                       )}
                     </div>
                     <div className="flex-1 h-12 relative">

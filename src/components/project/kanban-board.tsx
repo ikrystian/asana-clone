@@ -15,12 +15,15 @@ interface Task {
   status: string;
   priority: string;
   dueDate: string | null;
-  assignee: {
+  assignedUsers: Array<{
     id: string;
-    name: string;
-    email: string;
-    image: string | null;
-  } | null;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      image: string | null;
+    };
+  }>;
   _count?: {
     comments: number;
     attachments: number;
@@ -235,13 +238,17 @@ export function KanbanBoard({ projectId, initialTasks, sections, onCreateTask, o
                                 </div>
                               </div>
                               <div className="flex justify-between items-center mt-3">
-                                {task.assignee ? (
-                                  <Avatar className="h-6 w-6">
-                                    <AvatarImage src={task.assignee.image || ''} alt={task.assignee.name} />
-                                    <AvatarFallback className="text-xs">
-                                      {getInitials(task.assignee.name)}
-                                    </AvatarFallback>
-                                  </Avatar>
+                                {task.assignedUsers && task.assignedUsers.length > 0 ? (
+                                  <div className="flex items-center -space-x-2 overflow-hidden">
+                                    {task.assignedUsers.map((assignment) => (
+                                      <Avatar key={assignment.user.id} className="h-6 w-6 ring-2 ring-background">
+                                        <AvatarImage src={assignment.user.image || ''} alt={assignment.user.name} />
+                                        <AvatarFallback className="text-xs">
+                                          {getInitials(assignment.user.name)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    ))}
+                                  </div>
                                 ) : (
                                   <div className="w-6" />
                                 )}

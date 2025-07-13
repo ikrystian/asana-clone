@@ -20,13 +20,16 @@ model User {
   updatedAt         DateTime            @updatedAt
   ownedProjects     Project[]           @relation("ProjectOwner")
   memberProjects    ProjectMember[]     @relation("ProjectMember")
-  assignedTasks     Task[]              @relation("TaskAssignee")
+  taskAssignments   TaskAssignment[]    @relation("UserTaskAssignments")
   createdTasks      Task[]              @relation("TaskCreator")
   recurringTasks    RecurringTask[]     @relation("RecurringTaskCreator")
   comments          Comment[]           @relation("CommentAuthor")
   notifications     Notification[]      @relation("NotificationRecipient")
   mentionedIn       Mention[]           @relation("MentionedUser")
   timeEntries       TimeEntry[]         @relation("TimeEntryUser")
+  createdClients    Client[]            @relation("ClientCreator")
+  createdClientAccesses ClientAccess[]  @relation("ClientAccessCreator")
+  createdRecurringTasks RecurringTask[] @relation("RecurringTaskCreator")
 }
 
 model Project {
@@ -38,7 +41,9 @@ model Project {
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   ownerId           String
+  clientId          String?
   owner             User                @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  client            Client?             @relation("ClientProjects", fields: [clientId], references: [id], onDelete: SetNull)
   members           ProjectMember[]     @relation("ProjectMembers")
   sections          Section[]           @relation("ProjectSections")
   tasks             Task[]              @relation("ProjectTasks")
@@ -91,15 +96,14 @@ model Task {
   updatedAt         DateTime            @updatedAt
   projectId         String
   sectionId         String?
-  assigneeId        String?
   creatorId         String
   parentTaskId      String?
   project           Project             @relation("ProjectTasks", fields: [projectId], references: [id], onDelete: Cascade)
   section           Section?            @relation("SectionTasks", fields: [sectionId], references: [id])
-  assignee          User?               @relation("TaskAssignee", fields: [assigneeId], references: [id])
   creator           User                @relation("TaskCreator", fields: [creatorId], references: [id])
   parentTask        Task?               @relation("TaskSubtasks", fields: [parentTaskId], references: [id])
   subtasks          Task[]              @relation("TaskSubtasks")
+  assignedUsers     TaskAssignment[]    @relation("TaskAssignments")
   comments          Comment[]           @relation("TaskComments")
   attachments       Attachment[]        @relation("TaskAttachments")
   customFieldValues CustomFieldValue[]  @relation("TaskCustomFieldValues")
@@ -271,4 +275,56 @@ enum RecurringFrequency {
   WEEKLY
   MONTHLY
   YEARLY
+}
+
+model TaskAssignment {
+  id        String   @id @default(uuid())
+  taskId    String
+  userId    String
+  assignedAt DateTime @default(now())
+  task      Task     @relation("TaskAssignments", fields: [taskId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserTaskAssignments", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, userId])
+}
+
+model Client {
+  id                String              @id @default(uuid())
+  companyName       String
+  contactPerson     String?
+  email             String?
+  phone             String?
+  address           String?
+  websiteUrl        String?
+  notes             String?
+  status            ClientStatus        @default(ACTIVE)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  createdById       String
+  createdBy         User                @relation("ClientCreator", fields: [createdById], references: [id])
+  projects          Project[]           @relation("ClientProjects")
+  accesses          ClientAccess[]      @relation("ClientAccesses")
+}
+
+model ClientAccess {
+  id                String              @id @default(uuid())
+  clientId          String
+  accessType        String              // np. "FTP", "Panel administracyjny", "Strona WWW", "SSH", "Database", etc.
+  name              String?             // opcjonalna nazwa dostępu
+  url               String?             // URL/Host
+  username          String?
+  password          String?             // Will be encrypted
+  port              String?             // port dla połączeń
+  notes             String?             // dodatkowe notatki
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  createdById       String
+  client            Client              @relation("ClientAccesses", fields: [clientId], references: [id], onDelete: Cascade)
+  createdBy         User                @relation("ClientAccessCreator", fields: [createdById], references: [id])
+}
+
+enum ClientStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
 }

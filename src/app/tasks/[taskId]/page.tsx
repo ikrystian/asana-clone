@@ -7,25 +7,18 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import {
-  CheckCircle2,
-  Clock,
-  Calendar,
-  Flag,
-  MessageSquare,
-  Paperclip,
   ChevronLeft,
   MoreHorizontal,
   Trash2,
@@ -71,12 +64,15 @@ interface Task {
     id: string;
     name: string;
   } | null;
-  assignee: {
+  assignedUsers: Array<{
     id: string;
-    name: string;
-    email: string;
-    image: string | null;
-  } | null;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      image: string | null;
+    };
+  }>;
   creator: {
     id: string;
     name: string;
@@ -91,12 +87,15 @@ interface Task {
     id: string;
     title: string;
     status: string;
-    assignee: {
+    assignedUsers: Array<{
       id: string;
-      name: string;
-      email: string;
-      image: string | null;
-    } | null;
+      user: {
+        id: string;
+        name: string;
+        email: string;
+        image: string | null;
+      };
+    }>;
   }>;
   comments: Array<{
     id: string;
@@ -151,7 +150,7 @@ interface Task {
 }
 
 const commentSchema = z.object({
-  content: z.string().min(1, 'Komentarz nie może być pusty'),
+  content: z.string().min(1, 'Comment cannot be empty'),
 });
 
 type CommentFormValues = z.infer<typeof commentSchema>;
@@ -185,13 +184,13 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
         // Fetch task details
         const taskResponse = await fetch(`/api/tasks/${taskId}`);
         if (!taskResponse.ok) {
-          throw new Error('Nie udało się pobrać zadania');
+          throw new Error('Failed to fetch task');
         }
         const taskData = await taskResponse.json();
         setTask(taskData);
       } catch (error) {
-        console.error('Błąd podczas pobierania danych zadania:', error);
-        toast.error('Nie udało się załadować danych zadania');
+        console.error('Error fetching task data:', error);
+        toast.error('Failed to load task data');
       } finally {
         setIsLoading(false);
       }
@@ -222,16 +221,16 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       });
 
       if (!response.ok) {
-        throw new Error('Nie udało się zaktualizować statusu zadania');
+        throw new Error('Failed to update task status');
       }
 
       const updatedTask = await response.json();
       setTask(updatedTask);
 
-      toast.success(`Zadanie oznaczone jako ${newStatus === 'DONE' ? 'ukończone' : newStatus.toLowerCase().replace('_', ' ')}`);
+      toast.success(`Task marked as ${newStatus === 'DONE' ? 'complete' : newStatus.toLowerCase().replace('_', ' ')}`);
     } catch (error) {
-      console.error('Błąd podczas aktualizacji statusu zadania:', error);
-      toast.error('Nie udało się zaktualizować statusu zadania');
+      console.error('Error updating task status:', error);
+      toast.error('Failed to update task status');
     }
   };
 
@@ -248,7 +247,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       });
 
       if (!response.ok) {
-        throw new Error('Nie udało się zaktualizować statusu podzadania');
+        throw new Error('Failed to update subtask status');
       }
 
       // Update the task in the UI
@@ -265,10 +264,10 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
         };
       });
 
-      toast.success(`Podzadanie oznaczone jako ${completed ? 'ukończone' : 'nieukończone'}`);
+      toast.success(`Subtask marked as ${completed ? 'complete' : 'incomplete'}`);
     } catch (error) {
-      console.error('Błąd podczas aktualizacji statusu podzadania:', error);
-      toast.error('Nie udało się zaktualizować statusu podzadania');
+      console.error('Error updating subtask status:', error);
+      toast.error('Failed to update subtask status');
     }
   };
 
@@ -289,7 +288,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       });
 
       if (!response.ok) {
-        throw new Error('Nie udało się dodać komentarza');
+        throw new Error('Failed to add comment');
       }
 
       const newComment = await response.json();
@@ -307,10 +306,10 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       // Reset the form
       commentForm.reset();
 
-      toast.success('Komentarz został pomyślnie dodany');
+      toast.success('Comment added successfully');
     } catch (error) {
-      console.error('Błąd podczas dodawania komentarza:', error);
-      toast.error('Nie udało się dodać komentarza');
+      console.error('Error adding comment:', error);
+      toast.error('Failed to add comment');
     } finally {
       setIsSubmittingComment(false);
     }
@@ -327,14 +326,17 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
       });
 
       if (!response.ok) {
-        throw new Error('Nie udało się usunąć zadania');
+        throw new Error('Failed to delete task');
       }
 
-      toast.success('Zadanie zostało pomyślnie usunięte');
+      toast.success('Task deleted successfully');
       router.push(task.project ? `/projects/${task.project.id}` : '/dashboard');
     } catch (error) {
-      console.error('Błąd podczas usuwania zadania:', error);
-      toast.error('Nie udało się usunąć zadania');
+      console.error('Error deleting task:', error);
+      toast.error('Failed to delete task');
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -372,7 +374,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
             <div className="flex items-center justify-between">
               <Button variant="ghost" onClick={() => router.back()}>
                 <ChevronLeft className="mr-2 h-4 w-4" />
-                Wróć
+                Back
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -381,15 +383,15 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Opcje zadania</DropdownMenuLabel>
+                  <DropdownMenuLabel>Task Options</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => router.push(`/tasks/${task.id}/edit`)}>
                     <Edit className="mr-2 h-4 w-4" />
-                    Edytuj zadanie
+                    Edit Task
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push(task.project ? `/projects/${task.project.id}/tasks/new?parentId=${task.id}` : `/dashboard?parentId=${task.id}`)}>
                     <PlusSquare className="mr-2 h-4 w-4" />
-                    Dodaj podzadanie
+                    Add Subtask
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -397,7 +399,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                     onClick={() => setDeleteDialogOpen(true)}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Usuń zadanie
+                    Delete Task
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -419,7 +421,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                     {task.project.name}
                   </Link>
                 ) : (
-                  <span className="text-sm text-muted-foreground">Brak projektu</span>
+                  <span className="text-sm text-muted-foreground">No project</span>
                 )}
                 {task.parentTask && (
                   <>
@@ -442,9 +444,9 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                   className="cursor-pointer"
                   onClick={() => handleStatusChange(task.status === 'DONE' ? 'TODO' : 'DONE')}
                 >
-                  {task.status === 'TODO' ? 'Do zrobienia' :
-                   task.status === 'IN_PROGRESS' ? 'W toku' :
-                   task.status === 'REVIEW' ? 'Recenzja' : 'Zakończone'}
+                  {task.status === 'TODO' ? 'To Do' :
+                   task.status === 'IN_PROGRESS' ? 'In Progress' :
+                   task.status === 'REVIEW' ? 'Review' : 'Done'}
                 </Badge>
 
                 <Badge
@@ -456,13 +458,13 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                     'border-red-500 text-red-500'
                   }`}
                 >
-                  Priorytet {task.priority}
+                  {task.priority} Priority
                 </Badge>
 
                 {task.dueDate && (
                   <Badge variant="outline" className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {format(new Date(task.dueDate), 'd MMM, yyyy', { locale: pl })}
+                    {format(new Date(task.dueDate), 'MMM d, yyyy')}
                   </Badge>
                 )}
               </div>
@@ -472,7 +474,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
               <div className="space-y-6">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Szczegóły</CardTitle>
+                    <CardTitle className="text-sm font-medium">Details</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -480,66 +482,68 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm" className="h-8 text-xs">
-                            {task.status === 'TODO' ? 'Do zrobienia' :
-                             task.status === 'IN_PROGRESS' ? 'W toku' :
-                             task.status === 'REVIEW' ? 'Recenzja' : 'Zakończone'}
+                            {task.status === 'TODO' ? 'To Do' :
+                             task.status === 'IN_PROGRESS' ? 'In Progress' :
+                             task.status === 'REVIEW' ? 'Review' : 'Done'}
                             <ChevronLeft className="ml-1 h-3 w-3 rotate-270" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleStatusChange('TODO')}>
-                            Do zrobienia
+                            To Do
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleStatusChange('IN_PROGRESS')}>
-                            W toku
+                            In Progress
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleStatusChange('REVIEW')}>
-                            Recenzja
+                            Review
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleStatusChange('DONE')}>
-                            Zakończone
+                            Done
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Przypisany</span>
+                      <span className="text-sm text-muted-foreground">Assignees</span>
                       <div>
-                        {task.assignee ? (
-                          <div className="flex items-center">
-                            <Avatar className="h-6 w-6 mr-2">
-                              <AvatarImage src={task.assignee.image || ''} alt={task.assignee.name} />
-                              <AvatarFallback>{getInitials(task.assignee.name)}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm">{task.assignee.name}</span>
+                        {task.assignedUsers && task.assignedUsers.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {task.assignedUsers.map((assignment) => (
+                              <div key={assignment.user.id} className="flex items-center">
+                                <Avatar className="h-6 w-6 mr-1">
+                                  <AvatarImage src={assignment.user.image || ''} alt={assignment.user.name} />
+                                  <AvatarFallback>{getInitials(assignment.user.name)}</AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm">{assignment.user.name}</span>
+                              </div>
+                            ))}
                           </div>
                         ) : (
-                          <Button variant="ghost" size="sm" className="h-8 text-xs">
-                            Nieprzypisany
-                          </Button>
+                          <span className="text-sm text-muted-foreground">Unassigned</span>
                         )}
                       </div>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Termin</span>
+                      <span className="text-sm text-muted-foreground">Due Date</span>
                       <div>
                         {task.dueDate ? (
                           <div className="flex items-center text-sm">
                             <Calendar className="mr-1 h-3 w-3" />
-                            {format(new Date(task.dueDate), 'd MMM, yyyy', { locale: pl })}
+                            {format(new Date(task.dueDate), 'MMM d, yyyy')}
                           </div>
                         ) : (
                           <Button variant="ghost" size="sm" className="h-8 text-xs">
-                            Brak terminu
+                            No due date
                           </Button>
                         )}
                       </div>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Utworzone przez</span>
+                      <span className="text-sm text-muted-foreground">Created by</span>
                       <div className="flex items-center">
                         <Avatar className="h-6 w-6 mr-2">
                           <AvatarImage src={task.creator.image || ''} alt={task.creator.name} />
@@ -550,9 +554,9 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Utworzono</span>
+                      <span className="text-sm text-muted-foreground">Created</span>
                       <span className="text-sm">
-                        {format(new Date(task.createdAt), 'd MMM, yyyy', { locale: pl })}
+                        {format(new Date(task.createdAt), 'MMM d, yyyy')}
                       </span>
                     </div>
                   </CardContent>
@@ -561,7 +565,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                 {task.subtasks && task.subtasks.length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Podzadania</CardTitle>
+                      <CardTitle className="text-sm font-medium">Subtasks</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-2">
@@ -588,13 +592,17 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                               >
                                 {subtask.title}
                               </Link>
-                              {subtask.assignee && (
-                                <div className="flex items-center mt-1">
-                                  <Avatar className="h-4 w-4 mr-1">
-                                    <AvatarImage src={subtask.assignee.image || ''} alt={subtask.assignee.name} />
-                                    <AvatarFallback className="text-[8px]">{getInitials(subtask.assignee.name)}</AvatarFallback>
-                                  </Avatar>
-                                  <span className="text-xs text-muted-foreground">{subtask.assignee.name}</span>
+                              {subtask.assignedUsers && subtask.assignedUsers.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {subtask.assignedUsers.map((assignment) => (
+                                    <div key={assignment.user.id} className="flex items-center">
+                                      <Avatar className="h-4 w-4 mr-1">
+                                        <AvatarImage src={assignment.user.image || ''} alt={assignment.user.name} />
+                                        <AvatarFallback className="text-[8px]">{getInitials(assignment.user.name)}</AvatarFallback>
+                                      </Avatar>
+                                      <span className="text-xs text-muted-foreground">{assignment.user.name}</span>
+                                    </div>
+                                  ))}
                                 </div>
                               )}
                             </div>
@@ -610,7 +618,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                         onClick={() => router.push(task.project ? `/projects/${task.project.id}/tasks/new?parentId=${task.id}` : `/dashboard?parentId=${task.id}`)}
                       >
                         <PlusSquare className="mr-1 h-3 w-3" />
-                        Dodaj podzadanie
+                        Add Subtask
                       </Button>
                     </CardFooter>
                   </Card>
@@ -619,7 +627,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                 {task.attachments && task.attachments.length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Załączniki</CardTitle>
+                      <CardTitle className="text-sm font-medium">Attachments</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-2">
@@ -654,7 +662,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                 {task.project && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Pola niestandardowe</CardTitle>
+                      <CardTitle className="text-sm font-medium">Custom Fields</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CustomFields
@@ -672,7 +680,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
               <div className="md:col-span-2 space-y-6">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Opis</CardTitle>
+                    <CardTitle className="text-sm font-medium">Description</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {task.description ? (
@@ -682,20 +690,20 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                         ))}
                       </div>
                     ) : (
-                      <p className="text-muted-foreground text-sm">Brak opisu</p>
+                      <p className="text-muted-foreground text-sm">No description provided</p>
                     )}
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Komentarze</CardTitle>
+                    <CardTitle className="text-sm font-medium">Comments</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4 max-h-96 overflow-y-auto mb-4">
                       {!task.comments || task.comments.length === 0 ? (
                         <p className="text-muted-foreground text-sm text-center py-4">
-                          Brak komentarzy
+                          No comments yet
                         </p>
                       ) : (
                         task.comments.map((comment) => (
@@ -708,7 +716,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                               <div className="flex items-center space-x-2">
                                 <span className="font-medium text-sm">{comment.author.name}</span>
                                 <span className="text-xs text-muted-foreground">
-                                  {format(new Date(comment.createdAt), 'd MMM, yyyy HH:mm', { locale: pl })}
+                                  {format(new Date(comment.createdAt), 'MMM d, yyyy h:mm a')}
                                 </span>
                               </div>
                               <div className="mt-1 text-sm">
@@ -733,7 +741,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                               <FormItem>
                                 <FormControl>
                                   <Textarea
-                                    placeholder="Dodaj komentarz..."
+                                    placeholder="Add a comment..."
                                     className="min-h-[80px]"
                                     {...field}
                                   />
@@ -743,7 +751,7 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                           />
                           <div className="flex justify-end">
                             <Button type="submit" size="sm" disabled={isSubmittingComment}>
-                              {isSubmittingComment ? 'Publikowanie...' : 'Opublikuj komentarz'}
+                              {isSubmittingComment ? 'Posting...' : 'Post Comment'}
                             </Button>
                           </div>
                         </form>
@@ -757,10 +765,10 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Usuń zadanie</DialogTitle>
+                  <DialogTitle>Delete Task</DialogTitle>
                   <DialogDescription>
-                    Czy na pewno chcesz usunąć to zadanie? Tej akcji nie można cofnąć,
-                    a wszystkie podzadania, komentarze i załączniki zostaną trwale usunięte.
+                    Are you sure you want to delete this task? This action cannot be undone
+                    and all subtasks, comments, and attachments will be permanently deleted.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
@@ -769,14 +777,14 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
                     onClick={() => setDeleteDialogOpen(false)}
                     disabled={isDeleting}
                   >
-                    Anuluj
+                    Cancel
                   </Button>
                   <Button
                     variant="destructive"
                     onClick={handleDeleteTask}
                     disabled={isDeleting}
                   >
-                    {isDeleting ? 'Usuwanie...' : 'Usuń zadanie'}
+                    {isDeleting ? 'Deleting...' : 'Delete Task'}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -784,12 +792,12 @@ export default function TaskPage({ params }: { params: Promise<{ taskId: string 
           </div>
         ) : (
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold mb-2">Nie znaleziono zadania</h2>
+            <h2 className="text-2xl font-bold mb-2">Task not found</h2>
             <p className="text-muted-foreground mb-4">
-              Zadanie, którego szukasz, nie istnieje lub nie masz do niego dostępu.
+              The task you are looking for does not exist or you do not have access to it.
             </p>
             <Button onClick={() => router.push('/dashboard')}>
-              Wróć do pulpitu
+              Return to Dashboard
             </Button>
           </div>
         )}
